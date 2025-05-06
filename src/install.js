@@ -30,11 +30,12 @@ async function play() {
 async function uploadconfig(repl, configfile, filenames, callback) {
     let filename = "";
     try {
-        const filefolder = configfile.split("/").slice(0,-1).join("/");
+        let filefolder = configfile.split("/").slice(0,-1).join("/");
+        if (filefolder !== "") filefolder += "/";
         for(const filename of filenames) {
             console.log(`Uploading ${filename}`);
 
-            const filefetch = await fetchfile(`${filefolder}/${filename}`);
+            const filefetch = await fetchfile(`${filefolder}${filename}`);
             const filebuffer = await filefetch.arrayBuffer();
 
             await repl.put(filename, new Uint8Array(filebuffer));
