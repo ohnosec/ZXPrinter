@@ -1,0 +1,222 @@
+import { islocal } from "./local.js"
+import { serial } from "./serial.js"
+import * as command from "./command.js"
+import { setbusystate, showerror, errordefs, ShowError } from "./utils.js"
+
+const requests = {
+    getlog: {
+      route: "log",
+      method: "GET",
+      command: "getlog",
+      paramnames: []
+    },
+    setcapture: {
+      route: "printer/capture/{state}",
+      method: "POST",
+      command: "setcapture",
+      paramnames: ["state"]
+    },
+    setendofline: {
+        route: "printer/endofline/{char}",
+        method: "POST",
+        command: "setendofline",
+        paramnames: ["char"]
+    },
+    setendofprint: {
+        route: "printer/endofprint/{char}",
+        method: "POST",
+        command: "setendofprint",
+        paramnames: ["char"]
+    },
+    setleftmargin: {
+        route: "printer/leftmargin/{value}",
+        method: "POST",
+        command: "setleftmargin",
+        paramnames: ["value"]
+    },
+    setdensity: {
+        route: "printer/density/{value}",
+        method: "POST",
+        command: "setdensity",
+        paramnames: ["value"]
+    },
+   setprttarget: {
+      route: "printer/{target}",
+      method: "POST",
+      command: "setprinter",
+      paramnames: ["target"]
+    },
+    setserialsetting: {
+      route: "printer/serial/settings",
+      method: "POST",
+      command: "setserial",
+      paramnames: ["baudrate", "bits", "parity", "stop"]
+    },
+    setserialflow: {
+      route: "printer/serial/flow",
+      method: "POST",
+      command: "setflow",
+      paramnames: ["hardware", "software", "delayms"]
+    },
+    loadprintouts: {
+      route: "printouts",
+      method: "GET",
+      command: "getprintouts",
+      paramnames: []
+    },
+    loadprintout: {
+      route: "printouts/{name}",
+      method: "GET",
+      command: "getprintout",
+      paramnames: ["name"]
+    },
+    deleteprintout: {
+      route: "printouts/{name}",
+      method: "DELETE",
+      command: "deleteprintout",
+      paramnames: ["name"]
+    },
+    printprintout: {
+      route: "printouts/{name}/print",
+      method: "POST",
+      command: "printprintout",
+      paramnames: ["name"]
+    },
+    copyprintout: {
+        route: "printouts/{name}/copy",
+        method: "POST",
+        command: "copyprintout",
+        paramnames: ["name"]
+    },
+      setstore: {
+      route: "store/{name}",
+      method: "POST",
+      command: "setstore",
+      paramnames: ["name"]
+    },
+    about: {
+      route: "about",
+      method: "GET",
+      command: "about",
+      paramnames: []
+    },
+}
+
+let userCancelController = new AbortController();
+
+function hasaddress() {
+    return isrunninglocal() || getaddress();
+}
+
+function gettargethost() {
+    return isrunninglocal() ? window.location.hostname : getaddress();
+}
+
+function gettargetpath() {
+    return isrunninglocal() ? '' : `http://${getaddress()}`;
+}
+
+function iscloudconnection() {
+    const useserial = document.getElementById('useserial');
+    return !(useserial.checked && serial.isconnected) && ishttpallowed();
+}
+
+function isrunninglocal() {
+    return islocal == "true";
+}
+
+function getaddress() {
+    return localStorage.getItem('address');
+}
+
+function setaddress(address) {
+    localStorage.setItem('address', address);
+}
+
+function fetchcancel() {
+    userCancelController.abort();
+}
+
+function ishttpallowed() {
+    const currenturl = window.location;
+    const targetpath = gettargetpath();
+    const targeturl = URL.parse(targetpath, currenturl);
+    if (currenturl.protocol === "https:" && targeturl.protocol === "http:") {
+        return false;
+    }
+    return true;
+}
+
+async function fetchrequest(basepath, request, params = {}, ) {
+    if (!ishttpallowed()) {
+        throw new ShowError("Secure web hosting (https) doesn't support using the web to access ZX Printer");
+    }
+    userCancelController = new AbortController();
+    const body = {};
+    let path = request.route;
+    for(const paramname of request.paramnames) {
+      if (request.route.includes(`{${paramname}}`)) {
+        path = path.replace(`{${paramname}}`, params[paramname]);
+      } else {
+        body[paramname] = params[paramname];
+      }
+    }
+    const requestinit = {
+      method: request.method,
+      headers: {},
+      signal: AbortSignal.any([
+        userCancelController.signal,
+        AbortSignal.timeout(5000)
+      ])
+    };
+    if (request.method == "POST") {
+      requestinit['body'] = JSON.stringify(body);
+      requestinit.headers["Content-Type"] = "application/json"
+    }
+    return await fetch(`${basepath}/${path}`, requestinit);
+}
+
+async function execrequest(request, params = {}) {
+  try {
+    setbusystate(true);
+    if (iscloudconnection()) {
+        if (!hasaddress()) {
+            throw new ShowError("The web address has not been set");
+        }
+        const response = await fetchrequest(gettargetpath(), request, params);
+        if (!response.ok) {
+            throw new Error(`The web request was not ok (${response.status}:${response.statusText})`)
+        }
+        return await response.json();
+    } else {
+        if (!serial.isconnected) {
+            throw new ShowError("The serial port is not connected");
+        }
+        const cmdparams = [];
+        for (const paramname of request.paramnames) {
+            cmdparams.push(params[paramname]);
+        }
+        return await command.execute(request.command, cmdparams);
+    }
+  } catch(error) {
+    if (error.name != "AbortError") {
+        showerror(errordefs.requesterror, null, error);
+    }
+    throw error;
+  } finally {
+    setbusystate(false);
+  }
+}
+
+export {
+    requests,
+    isrunninglocal,
+    hasaddress,
+    gettargethost,
+    getaddress,
+    setaddress,
+    execrequest,
+    fetchcancel,
+    fetchrequest,
+    ishttpallowed
+}

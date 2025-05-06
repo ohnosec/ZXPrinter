@@ -1,0 +1,639 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Pico ZX Printer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preload" href="app.css" as="style">
+    <link rel="preload" href="assets/sinclair-logo.woff" as="font" type="font/woff" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="app.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script type="text/javascript" src="font.min.js"></script>
+  </head>
+  <body class="d-flex flex-column overflow-hidden vh-100 bg-secondary bg-opacity-25" id="app">
+    <nav class="navbar navbar-dark" style="border-bottom: 1px solid #838383">
+      <div class="container-fluid">
+        <div class="col">
+          <div class="row flex-nowrap">
+            <div class="col-auto">
+              <button class="nav-link" onclick="app.sidebartoggle()">
+                <i class="bi bi-list" style="font-size: 40px;"></i>
+              </button>
+            </div>
+            <div class="col-auto">
+              <div class="navbar-brand sinclair" style="padding-bottom: 0px; padding-top: 0px;">PICO</div>
+              <div class="navbar-brand fw-bold" style="padding-top: 0px; padding-bottom: 0px;">ZX PRINTER</div>
+            </div>
+            <div class="col-auto">
+              <img src="assets/printer.svg" class="prtimage" width="55px" height="55px" style="margin-top: 1px;" />
+            </div>
+            <div class="col d-flex flex-row align-items-center justify-content-end pe-3">
+              <div id="busyspinner" class="spinner-border text-secondary ms-auto d-none me-4" role="status" aria-hidden="true"></div>
+              <div class="dropdown">
+                <button class="menu nav-link pe-2" id="serialdropdown" onclick="void app.serialconnect()" aria-expanded="false"style="display: none;">
+                  <div class="d-flex">
+                    <img src="assets/cable-data.svg" width="40px" height="40px" style="filter: invert(100%)" />
+                    <img id="serialstate" class="connectstate" src="assets/just-lightning.svg" width="10px" height="10px" style="left: -22px;top: 40px;position: relative;">
+                  </div>
+                </button>
+                <div class="dropdown-menu p-4" style="width: 307px; left: -160px;">
+                  <div class="mb-3">
+                    <div class="d-inline me-1">
+                      <button class="btn btn-primary" onclick="void app.serialdisconnect()">Disconnect</button>
+                    </div>
+                    <div id="reset" class="d-inline me-1">
+                      <button class="btn btn-danger" onclick="void app.serialreset()">Reset</button>
+                    </div>
+                    <div id="install" class="d-inline me-1">
+                      <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#installmodal">Install</button>
+                    </div>
+                  </div>
+                  <div class="row mb-3 ms-0" id="useserialopt">
+                    <div class="form-check form-switch mb-0">
+                      <input class="form-check-input" type="checkbox" id="useserial" checked>
+                      <label class="form-check-label" for="useserial">Control over serial</label>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="networkcollapse pe-1">
+                        <hr/>
+                        <span>
+                          <button id="networkcollapse" class="nav-link" onclick="void app.networkpopulate()" data-bs-toggle="collapse" data-bs-target="#wificollapse" aria-expanded="false" aria-controls="wificollapse">
+                            Wi-Fi
+                            <img id="networkstateon" class="networkstate" src="assets/circle-outline-green.svg" width="13px" height="13px" style="top: -2px; left: 1px; position: relative;">
+                            <img id="networkstateoff" class="networkstate" src="assets/circle-outline-red.svg" width="13px" height="13px" style="top: -2px; left: 1px; position: relative;">
+                            <i class="bi bi-caret-down-fill pt-2"></i>
+                          </button>
+                        </span>
+                      </div>
+                      <div class="collapse pt-2" id="wificollapse">
+                        <div>
+                          <div class="mb-3 mt-2">
+                            <label for="networkname" class="form-label">Network</label>
+                            <div class="input-group">
+                              <input type="text" class="form-control" id="networkname" placeholder="Network name">
+                              <button class="btn border dropdown-toggle" id="networknamedrop" aria-expanded="false"></button>
+                              <ul class="dropdown-menu dropdown-menu-end" id="networknamelist">
+                              </ul>
+                            </div>
+                          </div>
+                          <div class="mb-3">
+                            <label for="networkpassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="networkpassword" placeholder="Network password" onclick="this.select()">
+                          </div>
+                          <div class="mb-3">
+                            <label for="networkaddress" class="form-label">Address</label>
+                            <div class="input-group">
+                              <input type="text" class="form-control" id="networkaddress" disabled onclick="this.select()" readonly>
+                              <button class="btn border" id="networkaddresscopy" onclick="void app.networkaddresscopy()" data-bs-toggle="tooltip" data-bs-title="Copy">
+                                <i class="bi bi-copy"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div class="mb-4">
+                            <label for="networkhostname" class="form-label">Host name</label>
+                            <input type="text" class="form-control" id="networkhostname" onclick="this.select()" spellcheck="false">
+                          </div>
+                          <div class="row">
+                            <div class="col-auto">
+                              <button class="btn btn-primary" id="networktest" onclick="void app.networktest()">Test</button>
+                              <button class="btn btn-danger" onclick="void app.networksave()">Save</button>
+                            </div>
+                            <div class="col d-flex flex-row justify-content-end">
+                              <div id="networktestspinner" class="spinner-border text-secondary ms-auto d-none" role="status" aria-hidden="true"></div>
+                              <i id="networktestgood" class="bi bi-cloud-check-fill text-success ms-auto d-none" style="font-size: 35px; position: relative; top: -5px; height: 0px;"></i>
+                              <i id="networktestbad" class="bi bi-cloud-slash-fill text-danger ms-auto d-none" style="font-size: 35px; position: relative; top: -5px; height: 0px;"></i>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="dropdown">
+                <button class="menu nav-link pe-2" id="clouddropdown" onclick="void app.cloudmenu()" aria-expanded="false" style="display: none;">
+                  <div class="d-flex">
+                    <img src="assets/cloud-outline.svg" width="40px" height="40px" style="filter: invert(100%)" />
+                    <img id="cloudconnect" class="connectstate" src="assets/just-lightning.svg" width="10px" height="10px" style="left: -22px;top: 40px;position: relative;">
+                  </div>
+                </button>
+                <div class="dropdown-menu p-4" style="width: 307px; left: -225px;">
+                  <div class="mb-4 row">
+                    <label for="cloudaddress" class="form-label">Address</label>
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="cloudaddress" onclick="this.select()" oninput="void app.cloudaddresschange()">
+                      <button class="btn border" id="cloudaddresspaste" onclick="void app.cloudaddresspaste()" data-bs-toggle="tooltip" data-bs-title="Paste">
+                        <i class="bi bi-clipboard-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-auto">
+                      <button class="btn btn-primary" id="cloudtest" onclick="void app.cloudtest()">Test</button>
+                      <button class="btn btn-danger" id="cloudsave" onclick="void app.cloudsave()">Save</button>
+                      <button class="btn btn-primary" id="cloudopen" onclick="void app.cloudopen()">Open</button>
+                    </div>
+                    <div class="col d-flex flex-row justify-content-end">
+                      <div id="cloudtestspinner" class="spinner-border text-secondary ms-auto d-none" role="status" aria-hidden="true"></div>
+                      <i id="cloudtestgood" class="bi bi-cloud-check-fill text-success ms-auto d-none" style="font-size: 35px; position: relative; top: -5px; height: 0px;"></i>
+                      <i id="cloudtestbad" class="bi bi-cloud-slash-fill text-danger ms-auto d-none" style="font-size: 35px; position: relative; top: -5px; height: 0px;"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="container-fluid h-100">
+      <div class="row h-100">
+        <div id="menucontainer" class="position-relative col-3 col-xxl-2 d-flex pt-2 align-items-start flex-column navbar-dark" aria-expanded="true">
+          <div id="menugallery" class="menucontent active w-100">
+            <h3 class="menutitle">Gallery</h3>
+            <div class="ps-2 pt-1">
+              <div class="mb-4">
+                <div class="gallerysource row w-100">
+                  <div class="col-auto">
+                    <button class="menu nav-link ps-0" onclick="void app.galleryflash()" data-target="menugallery">
+                      <i class="bi bi-folder2"></i><span id="galleryflash" class="gallery active ms-1 ps-1 pe-2">Internal</span>
+                    </button>
+                  </div>
+                  <div class="gallerymethods col d-flex flex-row align-items-center justify-content-end pe-0">
+                    <div class="gallerydelete pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.confirmdelete()" data-bs-toggle="tooltip" data-bs-title="Delete">
+                        <i class="bi bi-trash3" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="gallerycopy pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.copyprintout(this)" data-bs-toggle="tooltip" data-bs-title="Copy">
+                        <i class="bi bi-copy" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="gallerypaste pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.pasteprintout()" data-bs-toggle="tooltip" data-bs-title="Paste">
+                        <i class="bi bi-clipboard-plus" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="galleryselectall pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.galleryselectall()" data-bs-toggle="tooltip" data-bs-title="Select/Deselect All">
+                        <i class="bi bi-check-square" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="galleryprtcollapse">
+                      <button class="nav-link d-inline" onclick="void app.galleryadvanced(this)">
+                        <i class="bi bi-caret-down-fill" style="font-size: small"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="gallerysource row w-100">
+                  <div class="col-auto">
+                    <button class="menu nav-link ps-0" onclick="void app.gallerysd()" data-target="menugallery">
+                      <i class="bi bi-folder2"></i><span id="gallerysd" class="gallery ms-1 ps-1 pe-2">SD Card</span>
+                    </button>
+                  </div>
+                  <div class="gallerymethods invisible col d-flex flex-row align-items-center justify-content-end pe-0">
+                    <div class="gallerydelete pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.confirmdelete()" data-bs-toggle="tooltip" data-bs-title="Delete">
+                        <i class="bi bi-trash3" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="gallerycopy pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.copyprintout(this)" data-bs-toggle="tooltip" data-bs-title="Copy">
+                        <i class="bi bi-copy" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="gallerypaste pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.pasteprintout()" data-bs-toggle="tooltip" data-bs-title="Paste">
+                        <i class="bi bi-clipboard-plus" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="galleryselectall pe-2 d-none">
+                      <button class="nav-link d-inline" onclick="void app.galleryselectall()" data-bs-toggle="tooltip" data-bs-title="Select/Deselect All">
+                        <i class="bi bi-check-square" style="font-size: small"></i>
+                      </button>
+                    </div>
+                    <div class="galleryprtcollapse">
+                      <button class="nav-link d-inline" onclick="void app.galleryadvanced(this)">
+                        <i class="bi bi-caret-down-fill" style="font-size: small"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-4 pb-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="gallerycapture" checked onclick="void app.gallerycapture()" >
+                  <label class="form-check-label" for="gallerycapture">Capture enable</label>
+                </div>
+              </div>
+              <div class="galleryoptcollapse pb-2 pe-3">
+                <hr/>
+                <span>
+                  <button id="galleryoptcollapse" class="nav-link" data-bs-toggle="collapse" data-bs-target="#galleryoptcollapsecontent" aria-expanded="false" aria-controls="galleryoptcollapsecontent">
+                    Options
+                    <i class="bi bi-caret-down-fill pt-2" style="font-size: small"></i>
+                  </button>
+                </span>
+              </div>
+              <div class="collapse" id="galleryoptcollapsecontent">
+                <div class="ms-0">
+                  <div class="mb-2">
+                    <label for="scale" class="form-label">Size</label>
+                    <div>
+                      <input id="scale" class="w-75" type="range" min="1" max="8" value="2">
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="paper" class="form-label">Paper</label>
+                    <div>
+                      <div id="paper" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="paper" id="paperzx" value="zxprinter" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="paperzx">ZX Printer</label>
+
+                        <input type="radio" class="btn-check" name="paper" id="paperts" value="ts2040" autocomplete="off">
+                        <label class="btn btn-secondary" for="paperts">TS 2040</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="convert" class="form-label">Text conversion</label>
+                    <div>
+                      <div id="convert" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="convert" id="convertzx" value="zx" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="convertzx">ZX Font</label>
+
+                        <input type="radio" class="btn-check" name="convert" id="convertts" value="ts" autocomplete="off">
+                        <label class="btn btn-secondary" for="convertts">TS Font</label>
+
+                        <input type="radio" class="btn-check" name="convert" id="convertzmak" value="zmakebas" autocomplete="off">
+                        <label class="btn btn-secondary" for="convertzmak">ZMakebas</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3" id="fontstyle">
+                    <label for="fonttype" class="form-label">Font style</label>
+                    <div>
+                      <div id="fonttype" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="font" id="fontpixel" value="normal" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="fontpixel">Normal</label>
+
+                        <input type="radio" class="btn-check" name="font" id="fontsoft" value="soft" autocomplete="off">
+                        <label class="btn btn-secondary" for="fontsoft">Soft</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="format" class="form-label">Image format</label>
+                    <div>
+                      <div id="format" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="format" id="formatbmp" value="bmp" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="formatbmp">BMP</label>
+
+                        <input type="radio" class="btn-check" name="format" id="formatpng" value="png" autocomplete="off">
+                        <label class="btn btn-secondary" for="formatpng">PNG</label>
+
+                        <input type="radio" class="btn-check" name="format" id="formatjpeg" value="jpeg" autocomplete="off">
+                        <label class="btn btn-secondary" for="formatjpeg">JPEG</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <div>
+                      <label for="gallerytarget" class="form-label">Printer</label>
+                      <div>
+                        <div id="gallerytarget" class="btn-group" role="group">
+                          <input type="radio" class="btn-check" name="gallerytarget" id="galtgtpc" value="PC" autocomplete="off" checked>
+                          <label class="btn btn-secondary disabled" for="galtgtpc">PC</label>
+
+                          <input type="radio" class="btn-check" name="gallerytarget" id="galtgtzx" value="ZX" autocomplete="off">
+                          <label class="btn btn-secondary disabled" for="galtgtzx">ZX</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="menuprinter" class="menucontent w-100">
+            <h3 class="menutitle">Printer</h3>
+            <div class="ps-2 pt-1">
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="printerenable" onclick="app.setprinterenable(this)" >
+                  <label class="form-check-label" for="printerenable">Printer enable</label>
+                </div>
+              </div>
+              <div id="printersettings" class="collapse">
+                <div class="mb-3">
+                  <label for="printereol" class="form-label">End of line</label>
+                  <div>
+                    <div id="printereol" class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="printereol" id="prteolcr" value="CR" autocomplete="off">
+                      <label class="btn btn-secondary" for="prteolcr">CR</label>
+
+                      <input type="radio" class="btn-check" name="printereol" id="prteolcrlf" value="CRLF" autocomplete="off" checked>
+                      <label class="btn btn-secondary" for="prteolcrlf">CR and LF</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="printereop" class="form-label">End of print</label>
+                  <div>
+                    <div id="printereop" class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="printereop" id="prteopnl" value="NL" autocomplete="off" checked>
+                      <label class="btn btn-secondary" for="prteopnl">New Line</label>
+
+                      <input type="radio" class="btn-check" name="printereop" id="prteopff" value="FF" autocomplete="off">
+                      <label class="btn btn-secondary" for="prteopff">Form Feed</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label for="leftmargin" class="form-label">Left margin</label>
+                  <div>
+                    <input id="leftmargin" class="w-75" type="range" min="1" max="30" value="0">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label for="dotdensity" class="form-label">Dot density</label>
+                  <div>
+                    <input id="dotdensity" class="w-75" type="range" min="0" max="1" value="0">
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <label for="printertarget" class="form-label">Port</label>
+                  <div>
+                    <div id="printertarget" class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="printertarget" id="prttgtparallel" value="parallel" autocomplete="off" checked>
+                      <label class="btn btn-secondary" for="prttgtparallel">Parallel</label>
+
+                      <input type="radio" class="btn-check" name="printertarget" id="prttgtserial" value="serial" autocomplete="off">
+                      <label class="btn btn-secondary" for="prttgtserial">Serial</label>
+                    </div>
+                  </div>
+                </div>
+                <div id="serialsettings" class="collapse">
+                  <div class="mb-3 pe-5" id="printerbaud2">
+                    <label for="printerbaud" class="form-label">Baud rate</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="printerbaud" placeholder="Baud rate" value="19200" oninput="this.value=this.value.replace(/(?![0-9])./gmi,'')">
+                        <button class="btn border dropdown-toggle" id="printerbauddrop" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                        <ul class="dropdown-menu dropdown-menu-end" id="printerbaudlist">
+                          <li><button class="dropdown-item">300</button></li>
+                          <li><button class="dropdown-item">600</button></li>
+                          <li><button class="dropdown-item">1200</button></li>
+                          <li><button class="dropdown-item">2400</button></li>
+                          <li><button class="dropdown-item">4800</button></li>
+                          <li><button class="dropdown-item">9600</button></li>
+                          <li><button class="dropdown-item">19220</button></li>
+                          <li><button class="dropdown-item">38400</button></li>
+                          <li><button class="dropdown-item">57600</button></li>
+                          <li><button class="dropdown-item">115200</button></li>
+                        </ul>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="printerbits" class="form-label">Data bits</label>
+                    <div>
+                      <div id="printerbits" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="printerbits" id="prtbit8" value="8" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="prtbit8">8</label>
+
+                        <input type="radio" class="btn-check" name="printerbits" id="prtbit7" value="7" autocomplete="off">
+                        <label class="btn btn-secondary" for="prtbit7">7</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="printerparity" class="form-label">Parity</label>
+                    <div>
+                      <div id="printerparity" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="printerparity" id="prtparitynone" value="none" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="prtparitynone">None</label>
+
+                        <input type="radio" class="btn-check" name="printerparity" id="prtparityeven" value="even" autocomplete="off" >
+                        <label class="btn btn-secondary" for="prtparityeven">Even</label>
+
+                        <input type="radio" class="btn-check" name="printerparity" id="prtparityodd" value="odd" autocomplete="off" >
+                        <label class="btn btn-secondary" for="prtparityodd">Odd</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="printerstop" class="form-label">Stop bits</label>
+                    <div>
+                      <div id="printerstop" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="printerstop" id="prtstop1" value="1" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="prtstop1">1</label>
+
+                        <input type="radio" class="btn-check" name="printerstop" id="prtstop2" value="2" autocomplete="off" >
+                        <label class="btn btn-secondary" for="prtstop2">2</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="printerflow" class="form-label">Flow control</label>
+                    <div>
+                      <div id="printerflow" class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="printerflow" id="prtflownone" value="none" autocomplete="off" checked>
+                        <label class="btn btn-secondary" for="prtflownone">None</label>
+
+                        <input type="radio" class="btn-check" name="printerflow" id="prtflowhard" value="hardware" autocomplete="off" >
+                        <label class="btn btn-secondary" for="prtflowhard">Hardware</label>
+
+                        <input type="radio" class="btn-check" name="printerflow" id="prtflowsoft" value="software" autocomplete="off" >
+                        <label class="btn btn-secondary" for="prtflowsoft">Software</label>
+
+                        <input type="radio" class="btn-check" name="printerflow" id="prtflowboth" value="both" autocomplete="off" >
+                        <label class="btn btn-secondary" for="prtflowboth">Both</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="serialdelay" class="form-label">Character delay</label>
+                    <div>
+                      <input id="serialdelay" class="w-75" type="range" min="0" max="1000" value="0">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="menulog" class="menucontent w-100">
+            <h3 class="menutitle">Logs</h3>
+            <div class="ps-2 pt-1">
+              <div class="mb-3 ">
+                <div class="logsource row flex-nowrap w-100">
+                  <div class="col-11">
+                    <button class="menu nav-link ps-0" onclick="void app.logzxprinter()" data-target="menulog">
+                      <i class="bi bi-card-text"></i><span id="logzxprinter" class="log ms-1 ps-1 pe-2 active">ZX Printer</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="logsource row flex-nowrap w-100">
+                  <div class="col-11">
+                    <button class="menu nav-link ps-0" onclick="void app.logserial()" data-target="menulog">
+                      <i class="bi bi-card-text"></i><span id="logserial" class="log ms-1 ps-1 pe-2">Serial</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="logsource row flex-nowrap w-100">
+                  <div class="col-11">
+                    <button class="menu nav-link ps-0" onclick="void app.logconsole()" data-target="menulog">
+                      <i class="bi bi-card-text"></i><span id="logconsole" class="log ms-1 ps-1 pe-2">Console</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="menusettings" class="menucontent">
+            <h3 class="menutitle">Settings</h3>
+            <div class="ps-2 pt-1">
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="logenable" onclick="app.showlog(this)" >
+                  <label class="form-check-label" for="logenable">Show logs</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="tooltipenable" onclick="app.showtooltip(this)" checked >
+                  <label class="form-check-label" for="tooltipenable">Show tips</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="position-absolute bottom-0 start-0 pb-2 ps-4 row flex-nowrap w-100">
+            <div class="col col-auto ps-0 pe-0">
+              <button class="menu nav-link" onclick="void app.renderall()" data-target="menugallery" data-bs-toggle="tooltip" data-bs-title="Gallery">
+                <i class="fs-4 bi bi-images"></i>
+              </button>
+            </div>
+            <div class="col col-auto ps-0 pe-0">
+              <button class="menu nav-link" data-target="menuprinter" data-bs-toggle="tooltip" data-bs-title="Printer">
+                <i class="fs-4 bi bi-printer"></i>
+              </button>
+            </div>
+            <div id="logmenu" class="col col-auto ps-0 pe-0 d-none" data-bs-toggle="tooltip" data-bs-title="Logs">
+              <button class="menu nav-link" onclick="void app.refreshlog()" data-target="menulog">
+                <i class="fs-4 bi bi-card-text"></i>
+              </button>
+            </div>
+            <!-- <div class="col col-auto ps-0 pe-0">
+              <button class="menu nav-link" onclick="void app.test()" data-target=""  data-bs-toggle="tooltip" data-bs-title="Test">
+                <i class="fs-4 bi bi-capsule"></i>
+              </button>
+            </div> -->
+            <div class="col col-auto ps-0 pe-0">
+              <button class="menu nav-link active" data-target="menusettings" data-bs-toggle="tooltip" data-bs-title="Settings">
+                <i class="fs-4 bi bi-gear"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="log" class="col overflow-auto h-100 p-3" hidden>
+          <textarea class="form-control shadow-none border-0" id="logtext" style="resize: none;box-sizing: border-box;height: 100%;width: 100%;" readonly=""></textarea>
+        </div>
+        <div id="gallery" class="col overflow-auto p-3 bodyscroll" hidden>
+          <div id="prtdoc" class="row">
+            <div id="prttemplate" class="col-lg-auto" hidden>
+              <div class="row justify-content-between collapse prtcollapse">
+                <div class="col-1" style="height: 31px;top: -3px;position: relative;">
+                  <div class="prttxtimgcheck form-check mb-0">
+                    <input class="form-check-input shadow-none border border-1 border-secondary custom prtcheck" type="checkbox" onchange="void app.selectprintout()" role="button" style="width: 30px;height: 30px;">
+                  </div>
+                </div>
+                <div class="col-11 text-end">
+                  <div class="prttxtimgbtn btn-group me-1" role="group">
+                    <input type="radio" class="btn-check" name="prttxtimgbtn" id="prtimgbtn" autocomplete="off" value="image" checked>
+                    <label class="btn btn-outline-secondary btn-sm" for="prtimgbtn"><i class="bi bi-file-image"></i></label>
+                    <input type="radio" class="btn-check" name="prttxtimgbtn" id="prttxtbtn" autocomplete="off" value="text">
+                    <label class="btn btn-outline-secondary btn-sm" for="prttxtbtn"><i class="bi bi-file-text"></i></label>
+                  </div>
+                  <button class="prtdownbtn btn btn-secondary btn-sm me-1">
+                    <i class="bi bi-box-arrow-down"></i>
+                  </button>
+                  <button class="prtprintbtn btn btn-secondary btn-sm">
+                    <i class="bi bi-printer"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="flip-card">
+                  <div class="flip-card-inner">
+                    <div class="flip-card-front rounded shadow zxpaper">
+                      <img class="prtimg">
+                    </div>
+                    <div class="flip-card-back rounded bg-white shadow overflow-hidden">
+                      <div class="prttxt overflow-auto px-2 prttxtzx"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="installmodal" tabindex="-1" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="installmodallabel">Install onto the ZX Printer</h1>
+            <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="progress" role="progressbar" aria-label="Install progress" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="height: 30px">
+              <div id="installprogress" class="progress-bar" style="width: 0%">0%</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button id="installbutton" class="btn btn-danger" onclick="void app.install()">Install</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="deletemodal" tabindex="-1" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="deletemodallabel">Confirm Delete</h1>
+            <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete these printouts?
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <button id="installbutton" class="btn btn-danger" onclick="void app.deleteprintout()">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="toast-container top-0 end-0" style="padding-top: 80px;">
+      <div id="errortoast" class="toast align-items-center border-0 text-light" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autodide="false" style="--bs-toast-bg: rgba(var(--bs-danger-rgb), 1);">
+        <div class="d-flex">
+          <div class="toast-body">
+            Error message
+          </div>
+          <button class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"crossorigin="anonymous"></script>
+    <script type="module">
+      import * as app from "./app.js"; window.app = app;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "filenames": [
+    "command.py",
+    "events.py",
+    "fileprinter.py",
+    "init.py",
+    "ledprinter.py",
+    "packbits.py",
+    "parallelprinter.py",
+    "parallelprinterdriver.py",
+    "physicalprinter.py",
+    "pixel.py",
+    "pixeldriver.py",
+    "producerconsumer.py",
+    "reset.py",
+    "sdcard.py",
+    "sdmanager.py",
+    "secretsmanager.py",
+    "serialprinter.py",
+    "serialserver.py",
+    "services.py",
+    "system.py",
+    "webserver.py",
+    "zxprinterdriver.py",
+    "phew/dns.py",
+    "phew/logging.py",
+    "phew/server.py",
+    "phew/template.py",
+    "phew/__init__.py"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+    "python.terminal.activateEnvironment": false,
+    "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none"
+    },
+    "python.analysis.typeshedPaths": [
+        "~/.micropico-stubs/included"
+    ],
+    "python.analysis.extraPaths": [
+        "~/.micropico-stubs/included"
+    ],
+    "python.analysis.exclude": [
+        "phew"
+    ],
+    "micropico.syncFolder": "",
+    "micropico.openOnStart": false,
+    "micropico.autoConnect": true,
+    "micropico.noSoftResetOnRun": true,
+
+    "workbench.editor.enablePreview": false,
+
+    "editor.tabSize": 4,
+    "[html]": {
+        "editor.tabSize": 2
+    },
+
+    "search.exclude": {
+        "**/export": true
+    }
+}
