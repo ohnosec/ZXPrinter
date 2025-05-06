@@ -27,6 +27,6 @@
     },
 
     "search.exclude": {
-        "**/export": true
+        "**/repo": true
     }
 }
