@@ -1,6 +1,6 @@
 import { datauri } from "./datauri.js"
 import { bmp_mono } from "./jsbmp.js"
-import { execrequest, requests, fetchcancel, ishttpallowed, hasaddress, gettargethost } from "./client.js"
+import { execrequest, requests, fetchcancel, ishttpallowed, hasaddress, gettargeturl } from "./client.js"
 
 const PrintSource = Object.freeze({
     FLASH: 0,
@@ -817,7 +817,9 @@ if (ishttpallowed() && hasaddress()) {
     const retrytime = 1000;
     const connect = () => {
         console.log("Event websocket connecting");
-        const eventsocket = new WebSocket(`ws://${gettargethost()}/events`);
+        const targeturl = gettargeturl();
+        const targetprotocol = targeturl.protocol === "http:" ? "ws:" : "wss:";
+        const eventsocket = new WebSocket(`${targetprotocol}//${targeturl.hostname}/events`);
         eventsocket.onmessage = event => {
             const data =  event.data;
             console.log(`Event websocket received ${data}`);

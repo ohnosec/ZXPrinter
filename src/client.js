@@ -104,25 +104,28 @@ const requests = {
 
 let userCancelController = new AbortController();
 
-function hasaddress() {
-    return isrunninglocal() || getaddress();
+function isrunninglocal() {
+    return islocal == "true";
 }
 
-function gettargethost() {
-    return isrunninglocal() ? window.location.hostname : getaddress();
+function hasaddress() {
+    return isrunninglocal() || getaddress();
 }
 
 function gettargetpath() {
     return isrunninglocal() ? '' : `http://${getaddress()}`;
 }
 
+function gettargeturl() {
+    const currenturl = window.location;
+    const targetpath = gettargetpath();
+    const targeturl = URL.parse(targetpath, currenturl);
+    return targeturl;
+}
+
 function iscloudconnection() {
     const useserial = document.getElementById('useserial');
     return !(useserial.checked && serial.isconnected) && ishttpallowed();
-}
-
-function isrunninglocal() {
-    return islocal == "true";
 }
 
 function getaddress() {
@@ -139,8 +142,7 @@ function fetchcancel() {
 
 function ishttpallowed() {
     const currenturl = window.location;
-    const targetpath = gettargetpath();
-    const targeturl = URL.parse(targetpath, currenturl);
+    const targeturl = gettargeturl();
     if (currenturl.protocol === "https:" && targeturl.protocol === "http:") {
         return false;
     }
@@ -212,7 +214,7 @@ export {
     requests,
     isrunninglocal,
     hasaddress,
-    gettargethost,
+    gettargeturl,
     getaddress,
     setaddress,
     execrequest,
