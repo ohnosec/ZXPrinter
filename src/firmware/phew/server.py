@@ -242,7 +242,9 @@ async def _parse_headers(reader):
     header_line = await reader.readline()
     if header_line == b"\r\n": # crlf denotes body start
       break
-    name, value = header_line.decode().strip().split(": ", 1)
+    header_split = header_line.decode().strip().split(": ", 1)
+    name = header_split[0]
+    value = "" if len(header_split) == 1 else header_split[1]
     headers[name.lower()] = value
   return headers
 
