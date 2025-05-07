@@ -102,6 +102,9 @@ async function install() {
             await repl.reboot();
         });
     } catch (error) {
+        const installelement = document.getElementById('installmodal');
+        const modal = bootstrap.Modal.getInstance(installelement);
+        modal.hide();
         showerror(errordefs.failedinstall, undefined, error);
     } finally {
         installbutton.disabled = false;

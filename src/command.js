@@ -41,7 +41,7 @@ async function executerepl(replaction) {
         await repl.reset();
         await replaction(repl);
     } catch (error) {
-        throw new Error("Serial REPL failed");
+        throw new Error("Serial REPL failed", { cause: error });
     } finally {
         setbusystate(false);
         release();

@@ -139,7 +139,13 @@ function showerror(errordef, message, error) {
     errortoast(toastmessage);
     const consolemessage = message ?? errordef.message;
     if (error) {
-        console.error(consolemessage, error);
+        var errormessage = error.stack.toString();
+        while(error.cause) {
+            error = error.cause;
+            errormessage += "\nCause by: "
+            errormessage += error.stack.toString();
+        }
+        console.error(consolemessage, errormessage);
     } else {
         console.error(consolemessage);
     }
