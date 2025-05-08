@@ -5,6 +5,15 @@ import { ishttpallowed } from "./client.js"
 
 const passwordplaceholder = '\x00\x00\x00\x00\x00';
 
+async function networkavailable() {
+    try {
+        const response = await command.execute("about", [], 200);
+        return response.network;
+    } catch {
+        return false;
+    }
+}
+
 function networkupdate(response) {
     const networkaddresselement = document.getElementById('networkaddress');
     const networkaddresscopyelement = document.getElementById('networkaddresscopy');
@@ -150,12 +159,19 @@ async function serialconnect() {
         //const response = await command.execute("status", []);
         //networkupdate(response);
         const useserialopt = document.getElementById('useserialopt');
-        if (!ishttpallowed()) {
+        const networksettings = document.getElementById('networksettings');
+        const hasnetwork = await networkavailable();
+        if (!ishttpallowed() || !hasnetwork) {
             const useserialchk = document.getElementById('useserial');
             useserialchk.checked = true;
             useserialopt.classList.add("d-none");
         } else {
             useserialopt.classList.remove("d-none");
+        }
+        if (!hasnetwork) {
+            networksettings.classList.add("d-none");
+        } else {
+            networksettings.classList.remove("d-none");
         }
         toggledropdown('serialdropdown');
     } else {

@@ -46,7 +46,7 @@ async function connect() {
     }
 
     try {
-        await port.open({ baudRate: 921600 });
+        await port.open({ baudRate: 115200 });
     } catch (error) {
         throw new Error("Serial port open failed", { cause: error });
     }

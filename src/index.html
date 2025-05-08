@@ -40,7 +40,7 @@
                   </div>
                 </button>
                 <div class="dropdown-menu p-4" style="width: 307px; left: -160px;">
-                  <div class="mb-3">
+                  <div class="mb-1">
                     <div class="d-inline me-1">
                       <button class="btn btn-primary" onclick="void app.serialdisconnect()">Disconnect</button>
                     </div>
@@ -51,13 +51,13 @@
                       <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#installmodal">Install</button>
                     </div>
                   </div>
-                  <div class="row mb-3 ms-0" id="useserialopt">
+                  <div class="row mb-3 mt-2 ms-0" id="useserialopt">
                     <div class="form-check form-switch mb-0">
                       <input class="form-check-input" type="checkbox" id="useserial" checked>
                       <label class="form-check-label" for="useserial">Control over serial</label>
                     </div>
                   </div>
-                  <div class="row">
+                  <div class="row" id="networksettings">
                     <div class="col-12">
                       <div class="networkcollapse pe-1">
                         <hr/>

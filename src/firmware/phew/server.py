@@ -457,11 +457,7 @@ def redirect(url, status = 301):
 def serve_file(file):
   return FileResponse(file)
 
-
-def run(host = "0.0.0.0", port = 80, usessl = False):
-
-  logging.info("> starting web server on port {}".format(port))
-
+def create_task(host = "0.0.0.0", port = 80, usessl = False):
   if usessl:
     import ssl
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -469,6 +465,11 @@ def run(host = "0.0.0.0", port = 80, usessl = False):
     loop.create_task(asyncio.start_server(_handle_request, host, 443, ssl=context))
 
   loop.create_task(asyncio.start_server(_handle_request, host, port))
+
+def run(host = "0.0.0.0", port = 80, usessl = False):
+  logging.info("> starting web server on port {}".format(port))
+
+  create_task(host, port, usessl)
 
   loop.run_forever()
 

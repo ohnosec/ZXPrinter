@@ -14,6 +14,8 @@ connectedpixel = pixel.create(pixeldriver.Pixel.GREEN)
 capturepixel = pixel.create(pixeldriver.Pixel.RED)
 connectedpixel.flash(500, 500, retrigger=True)
 
+import asyncio
+from system import hasnetwork
 from phew import server, logging
 from zxprinterdriver import RowServerAsync
 from producerconsumer import ProducerConsumer
@@ -21,31 +23,37 @@ import ledprinter
 import fileprinter
 import physicalprinter
 import services
-import webserver
 import serialserver
 import secretsmanager
 import gc
 
 # logging.enable_logging_types(logging.LOG_ALL)
-logging.logger = logging.file_logger
 # logging.logger = print
+logging.logger = logging.file_logger
+
+webenabled = hasnetwork()
 
 services.initialise(connectedpixel)
 secretsmanager.initialize()
-webserver.initialize(connectedpixel)
+if webenabled:
+    import webserver
+    webserver.initialize(connectedpixel)
 serialserver.initialize()
 
 print("Starting...")
 
-printserver = ProducerConsumer(RowServerAsync(PRTTIMEOUT))
-server.loop.create_task(printserver.getproducer())
-server.loop.create_task(ledprinter.capture(printserver.addconsumer(), capturepixel))
-server.loop.create_task(fileprinter.capture(printserver.addconsumer()))
-server.loop.create_task(physicalprinter.capture(printserver.addconsumer()))
+eventloop = asyncio.get_event_loop()
 
-server.loop.create_task(serialserver.start())
-server.loop.create_task(webserver.start())
+printserver = ProducerConsumer(RowServerAsync(PRTTIMEOUT))
+eventloop.create_task(printserver.getproducer())
+eventloop.create_task(ledprinter.capture(printserver.addconsumer(), capturepixel))
+eventloop.create_task(fileprinter.capture(printserver.addconsumer()))
+eventloop.create_task(physicalprinter.capture(printserver.addconsumer()))
+
+eventloop.create_task(serialserver.start())
+if webenabled:
+    eventloop.create_task(webserver.start())
 
 gc.collect()
 
-server.run()
+eventloop.run_forever()

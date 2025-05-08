@@ -146,6 +146,7 @@ async def connect_to_wifi(ssid, password, timeout_seconds=15):
     return wlan.ifconfig()[0] if wlan.status()==network.STAT_GOT_IP else ""
 
 async def start():
+    server.create_task()
     try:
         ipaddress = await connect_to_wifi(secretsmanager.getssid(), secretsmanager.getpassword())
         if ipaddress:

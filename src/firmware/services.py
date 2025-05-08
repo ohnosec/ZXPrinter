@@ -1,9 +1,6 @@
 import os
-import time
 import json
 from micropython import const
-import asyncio
-import network
 import parallelprinter
 import serialprinter
 from phew import server, logging
@@ -11,6 +8,7 @@ import fileprinter
 import physicalprinter
 from sdmanager import SDManager
 import secretsmanager
+from system import hasnetwork
 
 SDBUS       = const(0)
 SDCLK       = const(18)
@@ -21,10 +19,8 @@ SDCD        = const(27)
 
 def initialise(p):
     global sd
-    global wlan
     global connectedpixel
 
-    wlan = network.WLAN()
     connectedpixel = p
 
     sd = SDManager(bus=SDBUS, sck=SDCLK, mosi=SDMOSI, miso=SDMISO, cs=SDCS, cd=SDCD)
@@ -138,6 +134,8 @@ def getnetwork():
     }
 
 async def sethostname(newhostname):
+    import network
+
     if newhostname != network.hostname():
         logging.info(f"Setting hostname {newhostname}")
         secretsmanager.sethostname(newhostname)
@@ -153,6 +151,9 @@ async def setnetwork(newssid, newpassword):
     return {}
 
 def connect(newssid, newpassword):
+    import network
+
+    wlan = network.WLAN()
     ssid = secretsmanager.getssid()
     password = secretsmanager.getpassword()
     if newssid is not None:
@@ -170,6 +171,9 @@ def connect(newssid, newpassword):
     return {}
 
 def status():
+    import network
+
+    wlan = network.WLAN()
     connected = wlan.isconnected()
     rssi = wlan.status('rssi')
     state = wlan.status()
@@ -204,6 +208,9 @@ def status():
     }
 
 def scan():
+    import network
+
+    wlan = network.WLAN()
     networks = [{'ssid': net[0], 'rssi': net[3]} for net in wlan.scan()]
     return networks
 
@@ -240,5 +247,6 @@ def copyfile(src_filename, dst_filename):
 
 def about():
     return {
-        'version': 1.0
+        'version': 1.0,
+        'network': hasnetwork()
     }
