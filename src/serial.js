@@ -1,8 +1,8 @@
 import { sleep, Logger } from "./utils.js"
 
 let port, reader, writer;
-let onconnect = () => {}
-let ondisconnect = () => {}
+let onconnect = async () => {}
+let ondisconnect = async () => {}
 let isconnected = false;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -51,11 +51,11 @@ async function connect() {
         throw new Error("Serial port open failed", { cause: error });
     }
 
-    onconnect();
-    isconnected = true;
-
     reader = port.readable.getReader();
     writer = port.writable.getWriter();
+
+    isconnected = true;
+    onconnect(); // dont wait so the handler can do serial IO
 
     try {
         while (true) {
@@ -73,8 +73,8 @@ async function connect() {
     } catch (err) {
         console.error("Unexpected serial disconnect")
     }
-    ondisconnect()
     isconnected = false;
+    await ondisconnect()
 }
 
 async function write(data) {

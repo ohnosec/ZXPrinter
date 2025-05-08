@@ -1,4 +1,5 @@
 import * as command from "./command.js"
+import * as network from "./network.js"
 
 import { showerror, errordefs, ShowError } from "./utils.js"
 
@@ -75,6 +76,7 @@ async function getconfigs() {
 }
 
 async function install() {
+    const installmodal = bootstrap.Modal.getInstance(document.getElementById('installmodal'));
     const installbutton = document.getElementById('installbutton');
     installbutton.disabled = true;
     try {
@@ -99,12 +101,12 @@ async function install() {
             updateprogress(progresselement, 100);
 
             console.log('Rebooting');
-            await repl.reboot();
+            await command.reboot();
+            installmodal.hide();
         });
+        await network.serialrefreshstate();
     } catch (error) {
-        const installelement = document.getElementById('installmodal');
-        const modal = bootstrap.Modal.getInstance(installelement);
-        modal.hide();
+        installmodal.hide();
         showerror(errordefs.failedinstall, undefined, error);
     } finally {
         installbutton.disabled = false;

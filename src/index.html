@@ -33,10 +33,11 @@
             <div class="col d-flex flex-row align-items-center justify-content-end pe-3">
               <div id="busyspinner" class="spinner-border text-secondary ms-auto d-none me-4" role="status" aria-hidden="true"></div>
               <div class="dropdown">
-                <button class="menu nav-link pe-2" id="serialdropdown" onclick="void app.serialconnect()" aria-expanded="false"style="display: none;">
+                <button class="menu nav-link pe-2" id="serialdropdown" onclick="void app.serialconnect()" aria-expanded="false" style="width: 65px; display: none">
                   <div class="d-flex">
                     <img src="assets/cable-data.svg" width="40px" height="40px" style="filter: invert(100%)" />
-                    <img id="serialstate" class="connectstate" src="assets/just-lightning.svg" width="10px" height="10px" style="left: -22px;top: 40px;position: relative;">
+                    <img id="serialupstate" class="connectstate" src="assets/lightning-green.svg" width="10px" height="10px">
+                    <img id="serialdownstate" class="connectstate" src="assets/lightning-red.svg" width="10px" height="10px">
                   </div>
                 </button>
                 <div class="dropdown-menu p-4" style="width: 307px; left: -160px;">
@@ -64,8 +65,8 @@
                         <span>
                           <button id="networkcollapse" class="nav-link" onclick="void app.networkpopulate()" data-bs-toggle="collapse" data-bs-target="#wificollapse" aria-expanded="false" aria-controls="wificollapse">
                             Wi-Fi
-                            <img id="networkstateon" class="networkstate" src="assets/circle-outline-green.svg" width="13px" height="13px" style="top: -2px; left: 1px; position: relative;">
-                            <img id="networkstateoff" class="networkstate" src="assets/circle-outline-red.svg" width="13px" height="13px" style="top: -2px; left: 1px; position: relative;">
+                            <img id="networkstateon" class="networkstate" src="assets/circle-outline-green.svg" width="13px" height="13px">
+                            <img id="networkstateoff" class="networkstate" src="assets/circle-outline-red.svg" width="13px" height="13px">
                             <i class="bi bi-caret-down-fill pt-2"></i>
                           </button>
                         </span>
@@ -116,10 +117,11 @@
                 </div>
               </div>
               <div class="dropdown">
-                <button class="menu nav-link pe-2" id="clouddropdown" onclick="void app.cloudmenu()" aria-expanded="false" style="display: none;">
+                <button class="menu nav-link pe-2" id="clouddropdown" onclick="void app.cloudmenu()" aria-expanded="false" style="width: 65px; display: none">
                   <div class="d-flex">
                     <img src="assets/cloud-outline.svg" width="40px" height="40px" style="filter: invert(100%)" />
-                    <img id="cloudconnect" class="connectstate" src="assets/just-lightning.svg" width="10px" height="10px" style="left: -22px;top: 40px;position: relative;">
+                    <img id="cloudupstate" class="connectstate" src="assets/lightning-green.svg" width="10px" height="10px">
+                    <img id="clouddownstate" class="connectstate" src="assets/lightning-red.svg" width="10px" height="10px">
                   </div>
                 </button>
                 <div class="dropdown-menu p-4" style="width: 307px; left: -225px;">

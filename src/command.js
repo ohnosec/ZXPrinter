@@ -50,7 +50,7 @@ async function executerepl(replaction) {
 
 async function execute(command, params = [], timeout = 15000) {
     const release = await mutex.acquire();
-    setbusystate(true);
+    if (timeout>500) setbusystate(true);
     let responsetext;
     try {
         serial.flush();
@@ -61,7 +61,7 @@ async function execute(command, params = [], timeout = 15000) {
         const responseMs = (new Date()).getTime() - startTime;
         console.log(`Command '${command}' took ${responseMs} ms`)
     } finally {
-        setbusystate(false);
+        if (timeout>500) setbusystate(false);
         release();
     }
     try {
@@ -75,22 +75,27 @@ async function execute(command, params = [], timeout = 15000) {
     }
 }
 
-async function reset() {
+async function reboot() {
     const RETRYWAIT = 500;
     const RETRIES = (RESETSECONDS*1000)/RETRYWAIT;
+
+    await repl.reboot();
+    let state;
+    for(let retry=0; retry<RETRIES; retry++) {
+        state = await getstate();
+        if (state == State.RUNNING) break;
+        await sleep(RETRYWAIT);
+    }
+    if (state != State.RUNNING) {
+        throw new Error("Command not ready");
+    }
+}
+
+async function reset() {
     try {
         await executerepl(async (repl) => {
             const startTime = (new Date()).getTime();
-            await repl.reboot();
-            let state;
-            for(let retry=0; retry<RETRIES; retry++) {
-                state = await getstate();
-                if (state == State.RUNNING) break;
-                await sleep(RETRYWAIT);
-            }
-            if (state != State.RUNNING) {
-                throw new Error("Command not ready");
-            }
+            await reboot();
             const responseMs = (new Date()).getTime() - startTime;
             console.log(`Reset took ${responseMs} ms`)
         });
@@ -102,5 +107,6 @@ async function reset() {
 export {
     execute,
     executerepl,
-    reset
+    reset,
+    reboot
 }

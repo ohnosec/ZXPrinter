@@ -145,6 +145,15 @@ async function networktest() {
     networktestbutton.disabled = false;
 }
 
+async function serialup() {
+    try {
+        await command.execute("about", [], 200);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 function serialhide() {
     hidedropdown('serialdropdown');
 }
@@ -195,7 +204,10 @@ async function serialreset() {
     installbutton.disabled = true;
     try {
         await command.reset();
+        serialhide();
+        await serialrefreshstate();
     } catch(error) {
+        serialhide();
         showerror(errordefs.failedreset, undefined, error);
     } finally {
         resetbutton.disabled = false;
@@ -207,17 +219,31 @@ if (navigator.serial) {
     document.getElementById("serialdropdown").style.display = "block";
 }
 
-serial.onconnect = () => {
-    const serialstate = document.getElementById("serialstate");
-    serialstate.classList.add("active");
+async function serialrefreshstate() {
+    serialclearstate();
+    if (await serialup()) {
+        serialupstate.classList.add("active");
+    } else {
+        serialdownstate.classList.add("active");
+    }
 }
 
-serial.ondisconnect = () => {
-    const serialstate = document.getElementById("serialstate");
-    serialstate.classList.remove("active");
+function serialclearstate() {
+    const serialupstate = document.getElementById("serialupstate");
+    const serialdownstate = document.getElementById("serialdownstate");
+    serialupstate.classList.remove("active");
+    serialdownstate.classList.remove("active");
+}
+
+serial.onconnect = async () => {
+    await serialrefreshstate();
+}
+
+serial.ondisconnect = async () => {
+    serialclearstate();
 }
 
 export {
     networkpopulate, networkaddresscopy, networktest, networksave,
-    serialconnect, serialdisconnect, serialreset
+    serialconnect, serialdisconnect, serialreset, serialrefreshstate
 }

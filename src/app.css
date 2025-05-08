@@ -192,14 +192,20 @@
 
 .networkstate {
     display: none;
+    top: -2px;
+    left: 1px;
+    position: relative;
 }
 
 .connectstate.active {
-    opacity: 100;
+    display: inline-block;
 }
 
 .connectstate {
-    opacity: 0;
+    display: none;
+    top: 40px;
+    left: -22px;
+    position: relative;
 }
 
 .nav-link.active {
