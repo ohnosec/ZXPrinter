@@ -70,11 +70,11 @@ async def setendofprint(params):
 
 @command("setleftmargin", "value")
 async def setleftmargin(params):
-    return services.setprinterleftmargin(params["value"])
+    return services.setprinterleftmargin(int(params["value"]))
 
 @command("setdensity", "value")
 async def setdensity(params):
-    return services.setprinterdensity(params["value"])
+    return services.setprinterdensity(int(params["value"]))
 
 @command("setserial", "baudrate", "bits", "parity", "stop")
 async def setserial(params):
