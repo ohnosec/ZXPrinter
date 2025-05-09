@@ -1,3 +1,5 @@
+DEBUG = False
+
 from reset import resetall
 resetall()
 
@@ -27,9 +29,11 @@ import serialserver
 import secretsmanager
 import gc
 
-# logging.enable_logging_types(logging.LOG_ALL)
-# logging.logger = print
-logging.logger = logging.file_logger
+if DEBUG:
+    logging.enable_logging_types(logging.LOG_ALL)
+    logging.logger = print
+else:
+    logging.logger = logging.rotatefile_logger
 
 webenabled = hasnetwork()
 

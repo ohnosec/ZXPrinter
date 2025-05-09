@@ -214,19 +214,30 @@ def scan():
     networks = [{'ssid': net[0], 'rssi': net[3]} for net in wlan.scan()]
     return networks
 
+def readlogfile(filename):
+    if not logging.file_exists(filename):
+        return
+    with open(filename) as filehandle:
+        while True:
+            line = filehandle.readline()
+            if not line:
+                return
+            yield json.dumps(line.rstrip())
+
 async def getlogfile():
     yield '['
     try:
-        with open(logging.log_file) as filehandle:
-            firstline = True
-            while True:
-                line = filehandle.readline()
-                if not line:
-                    return
-                if not firstline:
-                    yield ','
-                firstline = False
-                yield json.dumps(line.rstrip())
+        isfirstline = True
+        for line in readlogfile(logging.log1_file):
+            if not isfirstline:
+                yield ','
+            isfirstline = False
+            yield line
+        for line in readlogfile(logging.log_file):
+            if not isfirstline:
+                yield ','
+            isfirstline = False
+            yield line
     finally:
         yield ']'
 

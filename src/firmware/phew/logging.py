@@ -1,6 +1,7 @@
 import machine, os, gc
 
-log_file = "log.txt"
+log_file = "/log.txt"
+log1_file = f"/{log_file}.1"
 logger = print
 
 LOG_INFO = 0b00001
@@ -27,6 +28,18 @@ def file_size(file):
     return os.stat(file)[6]
   except OSError:
     return None
+
+def file_exists(filename):
+  try:
+    return (os.stat(filename)[0] & 0x4000) == 0
+  except OSError:
+    return False
+
+def file_remove(filename):
+    try:
+        os.remove(log1_file)
+    except OSError:
+        pass
 
 def set_truncate_thresholds(truncate_at, truncate_to):
   global _log_truncate_at
@@ -107,16 +120,23 @@ def exception(*items):
     log("exception", " ".join(map(str, items)))
 
 def file_logger(log_entry):
-  with open(log_file, "a") as logfile:
-    logfile.write(log_entry + '\n')
+    with open(log_file, "a") as logfile:
+        logfile.write(log_entry + '\n')
+    return file_size(log_file)
 
-  size = file_size(log_file)
-
+def truncatefile_logger(log_entry):
+  size = file_logger(log_entry)
   if _log_truncate_at and size and size > _log_truncate_at:
     truncate(log_file, _log_truncate_to)
 
+def rotatefile_logger(log_entry):
+  size = file_logger(log_entry)
+  if _log_truncate_at and size and size > _log_truncate_at:
+    file_remove(log1_file)
+    os.rename(log_file, log1_file)
+
 def combined_logger(log_entry):
   print(log_entry)
-  file_logger(log_entry)
+  truncatefile_logger(log_entry)
 
 logger = combined_logger
