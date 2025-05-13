@@ -1,11 +1,13 @@
 import os
 import time
+import asyncio
 from micropython import const
 from machine import SPI, Pin
 from phew import logging
 from sdcard import SDCard
+from event import notifyevent
 
-DETECT_BOUNCE = const(200)
+CARDDETECTMS = const(250)
 
 class SDManager:
     def __init__(self, bus, sck, mosi, miso, cs, cd, mount_point='/sd'):
@@ -21,14 +23,11 @@ class SDManager:
 
         self.mountex = None
         self.mounted = False
-        self.mounts = 0
 
         self.cdtime = time.ticks_ms()
         self.cdpin = Pin(cd, Pin.IN, Pin.PULL_UP)
-        self.cdpin.irq(self._cardchange, Pin.IRQ_RISING | Pin.IRQ_FALLING)
-
-        if self._hascard():
-            self.mount()
+        self.cdhascard = False
+        self.cdtask = asyncio.create_task(self._cardwatch())
 
     def ismounted(self):
         return self._hascard() and self.mounted
@@ -60,14 +59,14 @@ class SDManager:
             self.mountex = ex
         return self.mounted
 
-    def _cardchange(self, _):
-        # this just ignores subsequent card detect changes,
-        # but it can be triggered by transient changes an also miss changes
-        # should really kick off a timer and wait till the card detect is stable
-        if time.ticks_diff(time.ticks_ms(), self.cdtime)>DETECT_BOUNCE:
-            self.mounts += 1
-            if self._hascard():
-                self.mount()
-            else:
-                self.unmount()
-            self.cdtime = time.ticks_ms()
+    async def _cardwatch(self):
+        while True:
+            hascard = self._hascard()
+            if hascard != self.cdhascard:
+                if hascard:
+                    self.mount()
+                else:
+                    self.unmount()
+                self.cdhascard = hascard
+                await notifyevent("sdcard", hascard)
+            await asyncio.sleep_ms(CARDDETECTMS) # type: ignore

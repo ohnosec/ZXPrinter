@@ -815,8 +815,24 @@ async function changeconvert() {
 }
 
 eventhandler.add(async (event) => {
-    if (event.type == 'capture') {
-        reloadall();
+    switch(event.type) {
+        case "capture":
+            reloadall();
+            break;
+        case "sdcard":
+            const issd = event.data;
+            //const sdsource = document.getElementById("gallerysdsource");
+            let button;
+            if (issd) {
+                //sdsource.classList.remove("d-none");
+                button = document.getElementById("gallerysdbutton");
+            } else {
+                //sdsource.classList.add("d-none");
+                button = document.getElementById("galleryflashbutton");
+            }
+            button.focus();
+            button.click();
+            break;
     }
 });
 
