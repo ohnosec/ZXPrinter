@@ -39,7 +39,13 @@ function showlog(checkbox) {
 
 function startrefresh() {
     if (!logintervalid) {
-        logintervalid = setInterval(() => refreshlog(false), 500);
+        const logtext = document.getElementById('logtext');
+        logintervalid = setInterval(() => {
+            const scrollpct = logtext.scrollTop / (logtext.scrollHeight - logtext.offsetHeight) * 100;
+            if (scrollpct == 100) {
+                refreshlog(false);
+            }
+        }, 500);
     }
 }
 
