@@ -1,6 +1,6 @@
 import { sleep, hidedropdown, toggledropdown, hidedropdowns, showerror, errordefs } from "./utils.js"
 import * as command from "./command.js"
-import { serial } from "./serial.js"
+import * as serial from "./serial.js"
 import { ishttpallowed } from "./client.js"
 
 const passwordplaceholder = '\x00\x00\x00\x00\x00';
@@ -189,7 +189,7 @@ async function serialconnect() {
             await serial.connect(); // this never exits
         } catch(error) {
             let message = error.message;
-            if (error.cause.name == "NetworkError") {
+            if (error.cause && error.cause.name == "NetworkError") {
                 message = "Serial port connection failed\nThe port may be in use"
             }
             showerror(errordefs.serialconnect, message, error);
@@ -235,13 +235,13 @@ function serialclearstate() {
     serialdownstate.classList.remove("active");
 }
 
-serial.onconnect = async () => {
+serial.connecthandler.add(async () => {
     await serialrefreshstate();
-}
+});
 
-serial.ondisconnect = async () => {
+serial.disconnecthandler.add(async () => {
     serialclearstate();
-}
+});
 
 export {
     networkpopulate, networkaddresscopy, networktest, networksave,

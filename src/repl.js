@@ -1,4 +1,4 @@
-import { serial } from "./serial.js"
+import * as serial from "./serial.js"
 import { sleep } from "./utils.js"
 
 const CTRLA = "\x01" // raw REPL

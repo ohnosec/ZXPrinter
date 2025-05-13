@@ -6,7 +6,7 @@ from micropython import const
 from phew import logging
 from phew.server import file_exists
 from packbits import PackBitsFile
-from events import notifyevent
+from event import notifyevent
 
 PRINTOUTFOLDER  = const('printout')
 PRINTCONFIGFILE = const('prtconfig.json')

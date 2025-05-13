@@ -1,7 +1,7 @@
 {
   "filenames": [
     "command.py",
-    "events.py",
+    "event.py",
     "fileprinter.py",
     "init.py",
     "ledprinter.py",

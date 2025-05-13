@@ -1,5 +1,5 @@
-import { serial } from "./serial.js"
 import { Mutex, sleep, setbusystate } from "./utils.js"
+import * as serial from "./serial.js"
 import * as repl from "./repl.js"
 
 const CTRLD = "\x04";

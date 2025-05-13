@@ -29,7 +29,23 @@ class Logger {
     get contents() {
         return this.buffer;
     }
-};
+}
+
+class Handler {
+    constructor() {
+        this.handlers = [];
+    }
+
+    add(handler) {
+        this.handlers.push(handler)
+    }
+
+    async call(...args) {
+        for(const handler of this.handlers) {
+            await handler.apply(handler, args);
+        }
+    }
+}
 
 function isdropdown(element) {
     for( ; element && element !== document; element = element.parentElement) {
@@ -139,7 +155,7 @@ function showerror(errordef, message, error) {
     errortoast(toastmessage);
     const consolemessage = message ?? errordef.message;
     if (error) {
-        var errormessage = error.stack.toString();
+        let errormessage = error.stack.toString();
         while(error.cause) {
             error = error.cause;
             errormessage += "\nCause by: "
@@ -155,6 +171,7 @@ export {
     sleep,
     Mutex,
     Logger,
+    Handler,
     isdropdown, hidedropdown, hidedropdowns, toggledropdown,
     setbusystate,
     showerror, errordefs, ShowError

@@ -1,5 +1,6 @@
 import json
 from phew import server, logging
+from command import serialnotify
 
 eventclients = set()
 
@@ -8,9 +9,12 @@ async def notifyevent(type, data):
 
     logging.info(f"Notifying event {type} with {data}")
     payload = json.dumps({
-        'type': type,
-        'data': data
+        'event': {
+            'type': type,
+            'data': data
+        }
     })
+    await serialnotify(payload)
     for client in eventclients:
         try:
             await client.send(payload)

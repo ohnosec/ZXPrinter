@@ -1,5 +1,5 @@
 import { islocal } from "./local.js"
-import { serial } from "./serial.js"
+import * as serial from "./serial.js"
 import * as command from "./command.js"
 import { setbusystate, showerror, errordefs, ShowError } from "./utils.js"
 

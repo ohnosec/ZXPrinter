@@ -1,8 +1,5 @@
-import { sleep, Logger } from "./utils.js"
-
+import { sleep, Logger, Handler } from "./utils.js"
 let port, reader, writer;
-let onconnect = async () => {}
-let ondisconnect = async () => {}
 let isconnected = false;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -35,6 +32,10 @@ function log(type, message) {
     }));
 }
 
+const connecthandler = new Handler();
+const disconnecthandler = new Handler();
+const readhandler = new Handler();
+
 async function connect() {
     try {
         port = await navigator.serial.requestPort();
@@ -53,9 +54,10 @@ async function connect() {
 
     reader = port.readable.getReader();
     writer = port.writable.getWriter();
+    readbuffer = "";
 
     isconnected = true;
-    onconnect(); // dont wait so the handler can do serial IO
+    connecthandler.call(); // dont wait so the handler can do serial IO
 
     try {
         while (true) {
@@ -65,16 +67,21 @@ async function connect() {
                 break;
             }
             if (value) {
-                const decodedvalue = decoder.decode(value);
-                readbuffer += decodedvalue;
-                log(LogType.READ, decodedvalue);
+                const readstring = decoder.decode(value);
+                await readhandler.call(readstring);
+                readbuffer += readstring;
+                log(LogType.READ, readstring);
             }
         }
     } catch (err) {
-        console.error("Unexpected serial disconnect")
+        console.error(`Unexpected serial disconnect: ${err}`)
     }
+    reader.releaseLock();
+    writer.releaseLock();
+    await port.forget();
+    await port.close();
     isconnected = false;
-    await ondisconnect()
+    await disconnecthandler.call();
 }
 
 async function write(data) {
@@ -90,7 +97,6 @@ async function write(data) {
 
 async function disconnect() {
     await reader.cancel()
-    await port.forget()
 }
 
 function flush() {
@@ -124,23 +130,16 @@ async function readchar(timeoutms=0) {
     return ch;
 }
 
-const serial = {
-    connect: connect,
-    write: write,
-    disconnect: disconnect,
-    read: readstring,
-    flush: flush,
-    available: available,
-
-    get isconnected() {
-        return isconnected;
-    },
-    set onconnect(handler) {
-        onconnect = handler;
-    },
-    set ondisconnect(handler) {
-        ondisconnect = handler;
-    }
+export {
+    connect,
+    write,
+    disconnect,
+    readstring as read,
+    flush,
+    available,
+    isconnected,
+    connecthandler,
+    disconnecthandler,
+    readhandler,
+    logger
 }
-
-export { serial, logger }

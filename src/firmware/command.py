@@ -3,10 +3,23 @@ import json
 import asyncio
 import usys
 import gc
+from micropython import const
+from machine import mem32
 from phew.server import urldecode
 from phew import logging
 
+# see 4.1.4 in RP2040 datasheet
+USBCTRL_REGS_BASE = const(0x50110000)
+SIE_STATUS = const(0x50)
+CONNECTED = const(1<<16)
+SUSPENDED = const(1<<4)
+
+def isconnected():
+    return (mem32[USBCTRL_REGS_BASE+SIE_STATUS] & (CONNECTED | SUSPENDED)) == CONNECTED
+
 WHITESPACE = ''.join(chr(code) for code in range(33)) # control chars and space
+
+seriallock = asyncio.Lock()
 
 class CommandDefinition:
     def __init__(self, name, handler, params):
@@ -92,42 +105,71 @@ def command(name, *args):
         return f
     return _command
 
-async def serialread(stdin):
+stdin = asyncio.StreamReader(usys.stdin)
+stdout = asyncio.StreamWriter(usys.stdout, {}) # type: ignore
+
+class LockingSerialReader:
+    def __init__(self):
+        self.locked = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        if self.locked:
+            seriallock.release()
+
+    async def read(self):
+        line = ''
+        while True:
+            byte = await stdin.read(1)
+            if not self.locked and ord(byte)>=ord(' '):
+                await seriallock.acquire()
+                self.locked = True
+            if byte == '\n' or byte == '\r':
+                return line
+            line += byte # type: ignore
+
+async def serialread():
     line = ''
     while True:
         byte = await stdin.read(1)
         if byte == '\n' or byte == '\r':
             return line
-        line += byte
+        line += byte # type: ignore
 
-async def serialwrite(stdout, response):
-    if type(response).__name__ == "generator":
-        for chunk in response:
-            await stdout.awrite(chunk)
+async def serialwrite(data):
+    if type(data).__name__ == "generator":
+        for chunk in data:
+            await stdout.awrite(chunk) # type: ignore
     else:
-        await stdout.awrite(json.dumps(response))
-    await stdout.awrite("\n")
+        await stdout.awrite(json.dumps(data)) # type: ignore
+    await stdout.awrite("\n") # type: ignore
+
+async def serialnotify(event):
+    if isconnected():
+        async with seriallock:
+            await stdout.awrite(event) # type: ignore
+            await stdout.awrite("\n") # type: ignore
 
 async def start_server():
-    stdin = asyncio.StreamReader(usys.stdin)
-    stdout = asyncio.StreamWriter(usys.stdout, {}) # type: ignore
-
     while True:
         try:
-            line = await serialread(stdin)
-            command_start_time = time.ticks_ms()
-            command = _match_command(line)
-            if command:
-                try:
-                    response = await command.invoke()
-                    await serialwrite(stdout, response)
-                    processing_time = time.ticks_ms() - command_start_time
-                    logging.info(f"$ {command} [{processing_time}ms]")
-                except Exception as e:
-                    logging.error(f"$ {command} failed: {e}")
-                    await serialwrite(stdout, command_error("Command failed", f"{e}"))
-            else:
-                await serialwrite(stdout, command_error("Unknown command"))
+            with LockingSerialReader() as reader:
+                line = await reader.read()
+                command_start_time = time.ticks_ms()
+                command = _match_command(line)
+                if command:
+                    try:
+                        response = await command.invoke()
+                        await serialwrite(response)
+                        processing_time = time.ticks_ms() - command_start_time
+                        logging.info(f"$ {command} [{processing_time}ms]")
+                    except Exception as e:
+                        logging.error(f"$ {command} failed: {e}")
+                        await serialwrite(command_error("Command failed", f"{e}"))
+                else:
+                    await serialwrite(command_error("Unknown command"))
             gc.collect()
         except Exception as e:
             logging.error(f"$ Command read failed: {e}")

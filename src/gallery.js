@@ -1,6 +1,7 @@
 import { datauri } from "./datauri.js"
 import { bmp_mono } from "./jsbmp.js"
 import { execrequest, requests, fetchcancel, ishttpallowed, hasaddress, gettargeturl } from "./client.js"
+import { eventhandler } from "./event.js"
 
 const PrintSource = Object.freeze({
     FLASH: 0,
@@ -813,34 +814,11 @@ async function changeconvert() {
     await changescale();
 }
 
-if (ishttpallowed() && hasaddress()) {
-    const retrytime = 1000;
-    const connect = () => {
-        console.log("Event websocket connecting");
-        const targeturl = gettargeturl();
-        const targetprotocol = targeturl.protocol === "http:" ? "ws:" : "wss:";
-        const eventsocket = new WebSocket(`${targetprotocol}//${targeturl.hostname}/events`);
-        eventsocket.onmessage = event => {
-            const data =  event.data;
-            console.log(`Event websocket received ${data}`);
-            const response = JSON.parse(data);
-            if (response.type == 'capture') {
-                reloadall();
-            }
-        };
-        eventsocket.onopen = _ => {
-            console.log("Event websocket connected");
-        };
-        eventsocket.onclose = _ => {
-            console.log("Event websocket disconnected");
-            setTimeout(connect, retrytime);
-        };
-        eventsocket.onerror = _ => {
-            console.log("Event websocket error");
-        };
-    };
-    connect();
-}
+eventhandler.add(async (event) => {
+    if (event.type == 'capture') {
+        reloadall();
+    }
+});
 
 const confirmdeleteeelement = document.getElementById("deletemodal");
 const confirmdeletemodal = bootstrap.Modal.getOrCreateInstance(confirmdeleteeelement, {
