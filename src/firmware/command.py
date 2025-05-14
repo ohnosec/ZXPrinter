@@ -167,7 +167,7 @@ async def start_server():
                         logging.info(f"$ {command} [{processing_time}ms]")
                     except Exception as e:
                         logging.error(f"$ {command} failed: {e}")
-                        await serialwrite(command_error("Command failed", f"{e}"))
+                        await serialwrite(command_error("Command failed", str(e)))
                 else:
                     await serialwrite(command_error("Unknown command"))
             gc.collect()

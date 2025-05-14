@@ -62,9 +62,11 @@ def get_printouts():
 
 def delete_printout(filename):
     os.remove(fileprinter.getfilepath(filename))
+    return {}
 
 def print_printout(filename):
     server.loop.create_task(physicalprinter.printfile(fileprinter.getfilepath(filename)))
+    return {}
 
 def copy_printout(filename):
     filename = fileprinter.getfilepath(filename)
@@ -78,6 +80,7 @@ def copy_printout(filename):
     logging.info(f"Copying from {fromfilename} to {topath}{nextfilename}")
     copyfile(fromfilename, nextfilename)
     fileprinter.savesettings()
+    return {}
 
 def setstorename(name):
     logging.info(f"Changing store to {name}")
@@ -86,29 +89,35 @@ def setstorename(name):
     else:
         os.chdir("/")
     fileprinter.captureinit()
+    return {}
 
 def setprintercapture(state):
     logging.info(f"Changing printer capture to {state}")
     state = state.lower()
     fileprinter.setcapture(state == "on")
+    return {}
 
 def setprinterendofline(char):
     logging.info(f"Changing printer end of line to {char}")
     char = char.lower()
     physicalprinter.setlinefeed(char == "crlf")
+    return {}
 
 def setprinterendofprint(char):
     logging.info(f"Changing printer end of print to {char}")
     char = char.lower()
     physicalprinter.setformfeed(char == "ff")
+    return {}
 
 def setprinterleftmargin(value):
     logging.info(f"Changing printer left margin to {value}")
     physicalprinter.setleftmargin(value)
+    return {}
 
 def setprinterdensity(value):
     logging.info(f"Changing printer density to {value}")
     physicalprinter.setdensity(value)
+    return {}
 
 def setprintertarget(target):
     logging.info(f"Changing printer to {target}")
@@ -119,14 +128,17 @@ def setprintertarget(target):
         serialprinter.setactive()
     elif target == "parallel":
         parallelprinter.setactive()
+    return {}
 
 def setserialsettings(settings):
     logging.info(f"Setting serial to {settings}")
     serialprinter.setsettings(settings['baudrate'], settings['bits'], settings['parity'], settings['stop'])
+    return {}
 
 def setserialflow(hardware, software, delayms):
     logging.info(f"Setting serial flow control to hardware={hardware} software={software} delayms={delayms}")
     serialprinter.setflowcontrol(hardware, software, delayms)
+    return {}
 
 def getnetwork():
     return {
