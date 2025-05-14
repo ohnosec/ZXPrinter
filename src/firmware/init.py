@@ -18,7 +18,7 @@ connectedpixel.flash(500, 500, retrigger=True)
 
 import asyncio
 from system import hasnetwork
-from phew import server, logging
+from phew import logging
 from zxprinterdriver import RowServerAsync
 from producerconsumer import ProducerConsumer
 import ledprinter

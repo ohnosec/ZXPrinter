@@ -9,10 +9,10 @@ import services
 import secretsmanager
 
 class JsonResponse(Response):
-    def __init__(self, body, content='application/json'):
+    def __init__(self, body, content='application/json', status=200):
         if type(body).__name__ != "generator":
             body = json.dumps(body)
-        super().__init__(body, headers={
+        super().__init__(body, status=status, headers={
             'Content-Type': content,
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': '*',
@@ -55,63 +55,52 @@ def printout(_, file):
 
 @server.route("/printouts/<file>", methods=['DELETE'])
 def printoutdel(_, file):
-    services.delete_printout(file)
-    return JsonResponse({})
+    return JsonResponse(services.delete_printout(file))
 
 @server.route("/printouts/<file>/print", methods=['POST'])
 def printoutprint(_, file):
-    services.print_printout(file)
-    return JsonResponse({})
+    return JsonResponse(services.print_printout(file))
 
 @server.route("/printouts/<file>/copy", methods=['POST'])
 def printoutcopy(_, file):
-    services.copy_printout(file)
-    return JsonResponse({})
+    return JsonResponse(services.copy_printout(file))
 
 @server.route("/store/<name>", methods=['POST'])
 def setstore(_, name):
-    services.setstorename(name)
-    return JsonResponse({})
+    return JsonResponse(services.setstorename(name))
 
 @server.route("/printer/capture/<state>", methods=['POST'])
 def setcapture(_, state):
-    services.setprintercapture(state)
-    return JsonResponse({})
+    return JsonResponse(services.setprintercapture(state))
 
 @server.route("/printer/endofline/<char>", methods=['POST'])
 def setendofline(_, char):
-    services.setprinterendofline(char)
-    return JsonResponse({})
+    return JsonResponse(services.setprinterendofline(char))
 
 @server.route("/printer/endofprint/<char>", methods=['POST'])
 def setendofprint(_, char):
-    services.setprinterendofprint(char)
-    return JsonResponse({})
+    return JsonResponse(services.setprinterendofprint(char))
 
 @server.route("/printer/leftmargin/<value>", methods=['POST'])
 def setleftmargin(_, value):
-    services.setprinterleftmargin(int(value))
-    return JsonResponse({})
+    return JsonResponse(services.setprinterleftmargin(int(value)))
 
 @server.route("/printer/density/<value>", methods=['POST'])
 def setdensity(_, value):
-    services.setprinterdensity(int(value))
-    return JsonResponse({})
+    return JsonResponse(services.setprinterdensity(int(value)))
 
 @server.route("/printer/<target>", methods=['POST'])
 def setprinter(_, target):
-    services.setprintertarget(target)
-    return JsonResponse({})
+    return JsonResponse(services.setprintertarget(target))
 
 @server.route("/printer/serial/settings", methods=['POST'])
 def setserial(request):
-    services.setserialsettings(request.data)
-    return JsonResponse({})
+    return JsonResponse(services.setserialsettings(request.data))
 
 @server.route("/printer/serial/flow", methods=['POST'])
 def setserialflow(request):
-    services.setserialflow(request.data['hardware'], request.data['software'], request.data['delayms'])
-    return JsonResponse({})
+    response = services.setserialflow(request.data['hardware'], request.data['software'], request.data['delayms'])
+    return JsonResponse(response)
 
 @server.route("/log")
 def getlog(_):
@@ -126,6 +115,13 @@ def catchall(request):
     if (request.method == 'OPTIONS'):
         return JsonResponse({})
     return redirect(f"http://{request.headers['host']}/index.html")
+
+@server.exception()
+def exception(_, ex):
+    return JsonResponse({
+        "error": "Request failed",
+        "cause": str(ex)
+    }, status=500)
 
 # async version of phew's connect_to_wifi
 async def connect_to_wifi(ssid, password, timeout_seconds=15):

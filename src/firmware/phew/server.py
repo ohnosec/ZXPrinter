@@ -7,6 +7,7 @@ import gc
 
 _routes = []
 catchall_handler = None
+exception_handler = None
 loop = asyncio.get_event_loop()
 
 
@@ -342,7 +343,13 @@ async def _handle_request(reader, writer):
       await route.handler(websocket)
       await writer.wait_closed()
       return
-    response = route.call_handler(request)
+    try:
+      response = route.call_handler(request)
+    except Exception as e:
+      if exception_handler:
+        response = exception_handler(request, e)
+      else:
+        raise
   elif catchall_handler:
     response = catchall_handler(request)
 
@@ -421,9 +428,14 @@ def add_websocket(path, handler):
   _add_route(Route(path, handler, methods=["GET"], iswebsocket=True))
 
 
-def set_callback(handler):
+def set_catchall(handler):
   global catchall_handler
   catchall_handler = handler
+
+
+def set_exception(handler):
+  global exception_handler
+  exception_handler = handler
 
 
 # decorator shorthand for adding a route
@@ -445,9 +457,17 @@ def websocket(path):
 # decorator for adding catchall route
 def catchall():
   def _catchall(f):
-    set_callback(f)
+    set_catchall(f)
     return f
   return _catchall
+
+
+# decorator for adding exception route
+def exception():
+  def _exception(f):
+    set_exception(f)
+    return f
+  return _exception
 
 
 def redirect(url, status = 301):
