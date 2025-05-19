@@ -12,87 +12,82 @@ const requests = {
     },
     setcapture: {
       route: "printer/capture/{state}",
-      method: "POST",
+      method: "PUT",
       command: "setcapture",
       paramnames: ["state"]
     },
     setendofline: {
         route: "printer/endofline/{char}",
-        method: "POST",
+        method: "PUT",
         command: "setendofline",
         paramnames: ["char"]
     },
     setendofprint: {
         route: "printer/endofprint/{char}",
-        method: "POST",
+        method: "PUT",
         command: "setendofprint",
         paramnames: ["char"]
     },
     setleftmargin: {
         route: "printer/leftmargin/{value}",
-        method: "POST",
+        method: "PUT",
         command: "setleftmargin",
         paramnames: ["value"]
     },
     setdensity: {
         route: "printer/density/{value}",
-        method: "POST",
+        method: "PUT",
         command: "setdensity",
         paramnames: ["value"]
     },
    setprttarget: {
       route: "printer/{target}",
-      method: "POST",
+      method: "PUT",
       command: "setprinter",
       paramnames: ["target"]
     },
     setserialsetting: {
       route: "printer/serial/settings",
-      method: "POST",
+      method: "PUT",
       command: "setserial",
       paramnames: ["baudrate", "bits", "parity", "stop"]
     },
     setserialflow: {
       route: "printer/serial/flow",
-      method: "POST",
+      method: "PUT",
       command: "setflow",
       paramnames: ["hardware", "software", "delayms"]
     },
     loadprintouts: {
-      route: "printouts",
+      route: "printouts/{store}",
       method: "GET",
       command: "getprintouts",
-      paramnames: []
+      paramnames: ["store"]
     },
     loadprintout: {
-      route: "printouts/{name}",
+      route: "printouts/{store}/{name}",
       method: "GET",
       command: "getprintout",
-      paramnames: ["name"]
+      paramnames: ["name", "store"]
     },
     deleteprintout: {
-      route: "printouts/{name}",
+      route: "printouts/{store}/{name}",
       method: "DELETE",
       command: "deleteprintout",
-      paramnames: ["name"]
+      paramnames: ["name", "store"]
     },
     printprintout: {
-      route: "printouts/{name}/print",
-      method: "POST",
+      route: "printouts/{store}/{name}/printer",
+      method: "PUT",
       command: "printprintout",
-      paramnames: ["name"]
+      paramnames: ["name", "store"]
     },
     copyprintout: {
-        route: "printouts/{name}/copy",
+        route: "printouts/{tostore}",
         method: "POST",
         command: "copyprintout",
-        paramnames: ["name"]
-    },
-      setstore: {
-      route: "store/{name}",
-      method: "POST",
-      command: "setstore",
-      paramnames: ["name"]
+        paramnames: ["name", "fromstore", "tostore"],
+        body: { source: "/printouts/{fromstore}/{name}" }
     },
     about: {
       route: "about",
@@ -154,14 +149,25 @@ async function fetchrequest(basepath, request, params = {}, ) {
         throw new ShowError("Secure web hosting (https) doesn't support using the web to access ZX Printer");
     }
     userCancelController = new AbortController();
-    const body = {};
+    const body = request.body ? structuredClone(request.body) : {};
     let path = request.route;
     for(const paramname of request.paramnames) {
       if (request.route.includes(`{${paramname}}`)) {
         path = path.replace(`{${paramname}}`, params[paramname]);
       } else {
-        body[paramname] = params[paramname];
+        if (!request.body) {
+            body[paramname] = params[paramname];
+        }
       }
+    }
+    if (request.body) {
+        for (const property in body) {
+            if (typeof property === 'string' || property instanceof String) {
+                for(const paramname of request.paramnames) {
+                    body[property] = body[property].replace(`{${paramname}}`, params[paramname]);
+                }
+            }
+        }
     }
     const requestinit = {
       method: request.method,
@@ -171,7 +177,7 @@ async function fetchrequest(basepath, request, params = {}, ) {
         AbortSignal.timeout(5000)
       ])
     };
-    if (request.method == "POST") {
+    if (request.method == "POST" || request.method == "PUT") {
       requestinit['body'] = JSON.stringify(body);
       requestinit.headers["Content-Type"] = "application/json"
     }

@@ -1,5 +1,6 @@
 import services
 from command import command, start_server
+import fileprinter
 
 def initialize():
     pass
@@ -28,29 +29,28 @@ async def status(_):
 async def scan(_):
     return services.scan()
 
-@command("getprintouts")
-async def getprintouts(_):
-    return services.get_printouts()
+def storename(store):
+    return store if store == fileprinter.SDSTORENAME else None
 
-@command("getprintout", "name")
+@command("getprintouts", "[store]")
+async def getprintouts(params):
+    return services.get_printouts(storename(params.get("store")))
+
+@command("getprintout", "name", "[store]")
 async def getprintout(params):
-    return services.render_printout(params["name"])
+    return services.get_printout(storename(params.get("store")), params["name"])
 
-@command("deleteprintout", "name")
+@command("deleteprintout", "name", "[store]")
 async def delprintout(params):
-    return services.delete_printout(params["name"])
+    return services.delete_printout(storename(params.get("store")), params["name"])
 
-@command("printprintout", "name")
+@command("printprintout", "name", "[store]")
 async def printprintout(params):
-    return services.print_printout(params["name"])
+    return services.print_printout(storename(params.get("store")), params["name"])
 
-@command("copyprintout", "name")
+@command("copyprintout", "name", "fromstore", "tostore")
 async def copyprintout(params):
-    return services.copy_printout(params["name"])
-
-@command("setstore", "name")
-async def setstore(params):
-    return services.setstorename(params["name"])
+    return services.copy_printout(storename(params["fromstore"]), storename(params["tostore"]), params["name"])
 
 @command("setprinter", "target")
 async def setprinter(params):

@@ -54,7 +54,7 @@ async function connect() {
 
     reader = port.readable.getReader();
     writer = port.writable.getWriter();
-    readbuffer = "";
+    flush();
 
     isconnected = true;
     connecthandler.call(); // dont wait so the handler can do serial IO
@@ -80,6 +80,7 @@ async function connect() {
     writer.releaseLock();
     await port.forget();
     await port.close();
+    flush();
     isconnected = false;
     await disconnecthandler.call();
 }

@@ -5,7 +5,6 @@ from micropython import const
 from machine import SPI, Pin
 from phew import logging
 from sdcard import SDCard
-from event import notifyevent
 
 CARDDETECTMS = const(250)
 
@@ -13,7 +12,7 @@ class SDManager:
     def __init__(self, bus, sck, mosi, miso, cs, cd, mount_point='/sd'):
         self.mount_point = mount_point
 
-        cspin = Pin(cs, Pin.OUT, Pin.PULL_UP)
+        cspin = Pin(cs, Pin.OUT)
         clkpin = Pin(sck, Pin.OUT)
         mosipin = Pin(mosi, Pin.OUT)
         misopin = Pin(miso, Pin.IN, Pin.PULL_UP)
@@ -24,6 +23,7 @@ class SDManager:
         self.mountex = None
         self.mounted = False
 
+        self.cdhandlers = []
         self.cdtime = time.ticks_ms()
         self.cdpin = Pin(cd, Pin.IN, Pin.PULL_UP)
         self.cdhascard = False
@@ -59,6 +59,9 @@ class SDManager:
             self.mountex = ex
         return self.mounted
 
+    def addhandler(self, handler):
+        self.cdhandlers.append(handler)
+
     async def _cardwatch(self):
         while True:
             hascard = self._hascard()
@@ -68,5 +71,6 @@ class SDManager:
                 else:
                     self.unmount()
                 self.cdhascard = hascard
-                await notifyevent("sdcard", hascard)
+                for handler in self.cdhandlers:
+                    await handler(hascard)
             await asyncio.sleep_ms(CARDDETECTMS) # type: ignore

@@ -65,6 +65,12 @@ async function execute(command, params = [], timeout = 15000) {
         release();
     }
     try {
+        const objectindex = responsetext.indexOf("{");
+        const arrayindex = responsetext.indexOf("[");
+        if (objectindex == -1 && arrayindex == -1) {
+            throw new Error("Serial command response missing");
+        }
+        responsetext = responsetext.substring(Math.min(objectindex, arrayindex));
         const response = JSON.parse(responsetext);
         if (response && response.error) {
             throw new Error("Serial command error");

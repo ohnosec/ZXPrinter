@@ -22,13 +22,12 @@ async function queueevent(data) {
         const response = JSON.parse(data);
         if (response.event) {
             const event = response.event;
-            const eventtype = event.type;
-            const lasttime = eventtimes.get(eventtype);
+            const lasttime = eventtimes.get(data);
             const nowtime = Date.now();
             if (lasttime) {
                 if (nowtime-lasttime < EVENTDEDUPMS) return;
             }
-            eventtimes.set(eventtype, nowtime);
+            eventtimes.set(data, nowtime);
             eventqueue.push(event);
         }
     } catch {
