@@ -13,6 +13,7 @@
     "pixeldriver.py",
     "producerconsumer.py",
     "reset.py",
+    "sd.py",
     "sdcard.py",
     "sdmanager.py",
     "secretsmanager.py",

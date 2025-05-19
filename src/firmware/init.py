@@ -27,6 +27,7 @@ import physicalprinter
 import services
 import serialserver
 import secretsmanager
+import sd
 import gc
 
 if DEBUG:
@@ -37,8 +38,9 @@ else:
 
 webenabled = hasnetwork()
 
-services.initialise(connectedpixel)
 secretsmanager.initialize()
+services.initialise(connectedpixel)
+fileprinter.initialise(sd.create())
 if webenabled:
     import webserver
     webserver.initialize(connectedpixel)

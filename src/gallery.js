@@ -54,8 +54,12 @@ function unpack(packed) {
     return unpacked;
 }
 
+function getstorename(source = printsource) {
+    return source == PrintSource.SD ? "sd" : "flash"
+}
+
 async function loadprintout(name) {
-    const printout = await execrequest(requests.loadprintout, { name: name });
+    const printout = await execrequest(requests.loadprintout, { store: getstorename(), name: name });
     const packed = printout
         .map((block) => block.match(/.{1,2}/g)
         .map((byte) => Number('0x'+byte)))
@@ -177,7 +181,7 @@ function putimage(name, imgsrc) {
             }
           } else {
             const name = getfilenamefromprt(prt);
-            await execrequest(requests.printprintout, { name: name });
+            await execrequest(requests.printprintout, { store: getstorename(), name: name });
           }
         });
 
@@ -332,7 +336,7 @@ async function renderall() {
     showgallery();
     const format = document.querySelector("#format input[type='radio']:checked").value;
     try {
-        const names = await execrequest(requests.loadprintouts);
+        const names = await execrequest(requests.loadprintouts, { store: getstorename() });
         names.sort();
         for(const name of names) {
             const bitmap = await getprintout(name);
@@ -594,14 +598,6 @@ async function converttext(name, element) {
     }, 100);
 }
 
-async function setstoresd() {
-    await execrequest(requests.setstore, { name: 'sdcard' });
-}
-
-async function setstoreflash() {
-    await execrequest(requests.setstore, { name: 'flash' });
-}
-
 function showgallery() {
     const galleryelement = document.getElementById('gallery');
     const logelement = document.getElementById('log');
@@ -627,7 +623,6 @@ async function galleryflash() {
     sdelement.closest(".gallerysource").getElementsByClassName('gallerymethods')[0].classList.add("invisible");
     flashelement.closest(".gallerysource").getElementsByClassName('gallerymethods')[0].classList.remove("invisible");
 
-    await setstoreflash();
     printsource = PrintSource.FLASH;
     await reloadall();
 }
@@ -650,7 +645,6 @@ async function gallerysd() {
     flashelement.closest(".gallerysource").getElementsByClassName('gallerymethods')[0].classList.add("invisible");
     sdelement.closest(".gallerysource").getElementsByClassName('gallerymethods')[0].classList.remove("invisible");
 
-    await setstoresd();
     printsource = PrintSource.SD;
     await reloadall();
 }
@@ -663,7 +657,7 @@ async function deleteprintout() {
     const checked = document.querySelectorAll('.prtcheck:checked');
     for (const check of checked) {
         const prt = check.closest(".prt");
-        await execrequest(requests.deleteprintout, { name: getfilenamefromprt(prt) });
+        await execrequest(requests.deleteprintout, { store: getstorename(), name: getfilenamefromprt(prt) });
     }
     confirmdeletemodal.hide();
     await reloadall();
@@ -683,9 +677,9 @@ function copyprintout(element) {
 }
 
 async function pasteprintout() {
-    const otherprintsource = printsource == PrintSource.FLASH ? PrintSource.SD : PrintSource.FLASH;
-    for(const printoutname of printcopies.get(otherprintsource)) {
-        await execrequest(requests.copyprintout, { name: printoutname });
+    const fromprintsource = printsource == PrintSource.FLASH ? PrintSource.SD : PrintSource.FLASH;
+    for(const printoutname of printcopies.get(fromprintsource)) {
+        await execrequest(requests.copyprintout, { name: printoutname, fromstore: getstorename(fromprintsource), tostore: getstorename() });
     }
     await reloadall();
 }
@@ -817,21 +811,29 @@ async function changeconvert() {
 eventhandler.add(async (event) => {
     switch(event.type) {
         case "capture":
-            reloadall();
+            if (printsource == PrintSource.FLASH) {
+                reloadall();
+            }
             break;
         case "sdcard":
-            const issd = event.data;
-            //const sdsource = document.getElementById("gallerysdsource");
-            let button;
-            if (issd) {
-                //sdsource.classList.remove("d-none");
-                button = document.getElementById("gallerysdbutton");
+            const ismounted = event.data;
+            const sdsource = document.getElementById("gallerysdsource");
+            printcache.set(PrintSource.SD, new Map());
+            printcopies.set(PrintSource.SD, []);
+            printselected.set(PrintSource.SD, []);
+            if (ismounted) {
+                sdsource.classList.remove("d-none");
+                if (printsource == PrintSource.SD) {
+                    reloadall();
+                }
             } else {
-                //sdsource.classList.add("d-none");
-                button = document.getElementById("galleryflashbutton");
+                sdsource.classList.add("d-none");
+                if (printsource == PrintSource.SD) {
+                    const button = document.getElementById("galleryflashbutton");
+                    button.focus();
+                    button.click();
+                }
             }
-            button.focus();
-            button.click();
             break;
     }
 });

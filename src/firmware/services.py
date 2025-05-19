@@ -6,31 +6,19 @@ import serialprinter
 from phew import server, logging
 import fileprinter
 import physicalprinter
-from sdmanager import SDManager
 import secretsmanager
 from system import hasnetwork
 
-SDBUS       = const(0)
-SDCLK       = const(18)
-SDMOSI      = const(19)
-SDMISO      = const(16)
-SDCS        = const(17)
-SDCD        = const(27)
-
 def initialise(p):
-    global sd
     global connectedpixel
 
     connectedpixel = p
 
-    sd = SDManager(bus=SDBUS, sck=SDCLK, mosi=SDMOSI, miso=SDMISO, cs=SDCS, cd=SDCD)
-    os.chdir("/")
-
     physicalprinter.setenabled(False)
 
 @micropython.native # type: ignore
-async def render_printout(filename):
-    filename = fileprinter.getfilepath(filename)
+async def get_printout(store, name):
+    filename = fileprinter.getfilepath(store, name)
     # starttime = time.ticks_ms()
     chunk = bytearray(1024)
     chunkview = memoryview(chunk)
@@ -57,38 +45,25 @@ async def render_printout(filename):
     finally:
         yield ']'
 
-def get_printouts():
-    return fileprinter.getfiles()
+def get_printouts(store):
+    return fileprinter.getfiles(store)
 
-def delete_printout(filename):
-    os.remove(fileprinter.getfilepath(filename))
+def delete_printout(store, name):
+    filename = fileprinter.getfilepath(store, name)
+    os.remove(filename)
     return {}
 
-def print_printout(filename):
-    server.loop.create_task(physicalprinter.printfile(fileprinter.getfilepath(filename)))
+def print_printout(store, name):
+    filename = fileprinter.getfilepath(store, name)
+    server.loop.create_task(physicalprinter.printfile(filename))
     return {}
 
-def copy_printout(filename):
-    filename = fileprinter.getfilepath(filename)
-    if os.getcwd() == "/":
-        fromfilename = f"{sd.mount_point}/{filename}"
-        topath = "/"
-    else:
-        fromfilename = f"/{filename}"
-        topath = f"{sd.mount_point}/"
-    nextfilename = fileprinter.nextfilename()
-    logging.info(f"Copying from {fromfilename} to {topath}{nextfilename}")
-    copyfile(fromfilename, nextfilename)
-    fileprinter.savesettings()
-    return {}
-
-def setstorename(name):
-    logging.info(f"Changing store to {name}")
-    if name.lower() == "sdcard":
-        os.chdir(sd.mount_point)
-    else:
-        os.chdir("/")
-    fileprinter.captureinit()
+def copy_printout(sourcestore, targetstore, filename):
+    fromfilename = fileprinter.getfilepath(sourcestore, filename)
+    tofilename = fileprinter.nextfilename(targetstore)
+    fileprinter.savesettings(targetstore)
+    logging.info(f"Copying from {fromfilename} to {tofilename}")
+    copyfile(fromfilename, tofilename)
     return {}
 
 def setprintercapture(state):
@@ -132,7 +107,7 @@ def setprintertarget(target):
 
 def setserialsettings(settings):
     logging.info(f"Setting serial to {settings}")
-    serialprinter.setsettings(settings['baudrate'], settings['bits'], settings['parity'], settings['stop'])
+    serialprinter.setsettings(settings["baudrate"], settings["bits"], settings["parity"], settings["stop"])
     return {}
 
 def setserialflow(hardware, software, delayms):
@@ -142,7 +117,7 @@ def setserialflow(hardware, software, delayms):
 
 def getnetwork():
     return {
-        'ssid': secretsmanager.getssid()
+        "ssid": secretsmanager.getssid()
     }
 
 async def sethostname(newhostname):
@@ -187,7 +162,7 @@ def status():
 
     wlan = network.WLAN()
     connected = wlan.isconnected()
-    rssi = wlan.status('rssi')
+    rssi = wlan.status("rssi")
     state = wlan.status()
     if state == network.STAT_IDLE:             # 0
         status = "No connection"
@@ -207,23 +182,23 @@ def status():
         ipaddress = wlan.ifconfig()[0]
     else:
         ipaddress = ""
-    macaddress = ':'.join([f"{b:02X}" for b in wlan.config('mac')])
+    macaddress = ':'.join([f"{b:02X}" for b in wlan.config("mac")])
     return {
-        'state': state,
-        'status': status,
-        'rssi': rssi,
-        'connected': connected,
-        'connecting': state == network.STAT_CONNECTING,
-        'hostname': network.hostname(),
-        'ip': ipaddress,
-        'mac': macaddress
+        "state": state,
+        "status": status,
+        "rssi": rssi,
+        "connected": connected,
+        "connecting": state == network.STAT_CONNECTING,
+        "hostname": network.hostname(),
+        "ip": ipaddress,
+        "mac": macaddress
     }
 
 def scan():
     import network
 
     wlan = network.WLAN()
-    networks = [{'ssid': net[0], 'rssi': net[3]} for net in wlan.scan()]
+    networks = [{"ssid": net[0], "rssi": net[3]} for net in wlan.scan()]
     return networks
 
 def readlogfile(filename):
@@ -253,11 +228,11 @@ async def getlogfile():
     finally:
         yield ']'
 
-def copyfile(src_filename, dst_filename):
+def copyfile(fromfilename, tofilename):
     BUFFER_SIZE = const(128)
     try:
-        with open(src_filename, 'rb') as src_file:
-            with open(dst_filename, 'wb') as dst_file:
+        with open(fromfilename, "rb") as src_file:
+            with open(tofilename, "wb") as dst_file:
                 while True:
                     buf = src_file.read(BUFFER_SIZE)
                     if len(buf) > 0:
@@ -270,6 +245,6 @@ def copyfile(src_filename, dst_filename):
 
 def about():
     return {
-        'version': 1.0,
-        'network': hasnetwork()
+        "version": 1.0,
+        "network": hasnetwork()
     }
