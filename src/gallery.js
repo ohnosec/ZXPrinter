@@ -1,7 +1,9 @@
 import { datauri } from "./datauri.js"
 import { bmp_mono } from "./jsbmp.js"
-import { execrequest, requests, fetchcancel, ishttpallowed, hasaddress, gettargeturl } from "./client.js"
-import { connecthandler, eventhandler } from "./event.js"
+import { execrequest, requests, fetchcancel } from "./client.js"
+import { eventhandler } from "./event.js"
+import * as serial from "./serial.js"
+import * as command from "./command.js"
 
 const PrintSource = Object.freeze({
     FLASH: 0,
@@ -828,9 +830,17 @@ function handlesd(ismounted) {
     }
 }
 
-connecthandler.add(async () => {
-    const about = await execrequest(requests.about);
-    handlesd(about.sdcard);
+async function sdavailable() {
+    try {
+        const response = await command.execute("about", [], 200);
+        return response.sdcard;
+    } catch {
+        return false;
+    }
+}
+
+serial.connecthandler.add(async () => {
+    handlesd(await sdavailable());
 });
 
 eventhandler.add(async (event) => {

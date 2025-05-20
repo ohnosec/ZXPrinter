@@ -48,7 +48,7 @@ async function executerepl(replaction) {
     }
 }
 
-async function execute(command, params = [], timeout = 15000) {
+async function execute(command, params = [], timeout = 5000) {
     const release = await mutex.acquire();
     if (timeout>500) setbusystate(true);
     let responsetext;
@@ -59,7 +59,7 @@ async function execute(command, params = [], timeout = 15000) {
         await serial.write(`${command} ${params}\r`);
         responsetext = await serial.read("\n", timeout);
         const responseMs = (new Date()).getTime() - startTime;
-        console.log(`Command '${command}' took ${responseMs} ms`)
+        console.log(`Command '${command}' took ${responseMs} ms`);
     } finally {
         if (timeout>500) setbusystate(false);
         release();
