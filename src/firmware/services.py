@@ -9,10 +9,12 @@ import physicalprinter
 import secretsmanager
 from system import hasnetwork
 
-def initialise(p):
+def initialise(p, sd):
     global connectedpixel
+    global sdmanager
 
     connectedpixel = p
+    sdmanager = sd
 
     physicalprinter.setenabled(False)
 
@@ -140,7 +142,7 @@ async def setnetwork(newssid, newpassword):
 def connect(newssid, newpassword):
     import network
 
-    wlan = network.WLAN()
+    wlan = network.WLAN() # type: ignore
     ssid = secretsmanager.getssid()
     password = secretsmanager.getpassword()
     if newssid is not None:
@@ -160,7 +162,7 @@ def connect(newssid, newpassword):
 def status():
     import network
 
-    wlan = network.WLAN()
+    wlan = network.WLAN() # type: ignore
     connected = wlan.isconnected()
     rssi = wlan.status("rssi")
     state = wlan.status()
@@ -197,7 +199,7 @@ def status():
 def scan():
     import network
 
-    wlan = network.WLAN()
+    wlan = network.WLAN() # type: ignore
     networks = [{"ssid": net[0], "rssi": net[3]} for net in wlan.scan()]
     return networks
 
@@ -243,8 +245,16 @@ def copyfile(fromfilename, tofilename):
     except:
         return False
 
+def getcardinfo():
+    ismounted = sdmanager.ismounted()
+    return {
+        "identifier": hex(sdmanager.card.CID)[2:] if ismounted else None,
+        "details": sdmanager.card.decode_cid() if ismounted else None
+    }
+
 def about():
     return {
         "version": 1.0,
-        "network": hasnetwork()
+        "network": hasnetwork(),
+        "sdcard": sdmanager.ismounted()
     }

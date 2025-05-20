@@ -1,7 +1,7 @@
 import { datauri } from "./datauri.js"
 import { bmp_mono } from "./jsbmp.js"
 import { execrequest, requests, fetchcancel, ishttpallowed, hasaddress, gettargeturl } from "./client.js"
-import { eventhandler } from "./event.js"
+import { connecthandler, eventhandler } from "./event.js"
 
 const PrintSource = Object.freeze({
     FLASH: 0,
@@ -808,6 +808,31 @@ async function changeconvert() {
     await changescale();
 }
 
+function handlesd(ismounted) {
+    const sdsource = document.getElementById("gallerysdsource");
+    printcache.set(PrintSource.SD, new Map());
+    printcopies.set(PrintSource.SD, []);
+    printselected.set(PrintSource.SD, []);
+    if (ismounted) {
+        sdsource.classList.remove("d-none");
+        if (printsource == PrintSource.SD) {
+            reloadall();
+        }
+    } else {
+        sdsource.classList.add("d-none");
+        if (printsource == PrintSource.SD) {
+            const button = document.getElementById("galleryflashbutton");
+            button.focus();
+            button.click();
+        }
+    }
+}
+
+connecthandler.add(async () => {
+    const about = await execrequest(requests.about);
+    handlesd(about.sdcard);
+});
+
 eventhandler.add(async (event) => {
     switch(event.type) {
         case "capture":
@@ -816,24 +841,7 @@ eventhandler.add(async (event) => {
             }
             break;
         case "sdcard":
-            const ismounted = event.data;
-            const sdsource = document.getElementById("gallerysdsource");
-            printcache.set(PrintSource.SD, new Map());
-            printcopies.set(PrintSource.SD, []);
-            printselected.set(PrintSource.SD, []);
-            if (ismounted) {
-                sdsource.classList.remove("d-none");
-                if (printsource == PrintSource.SD) {
-                    reloadall();
-                }
-            } else {
-                sdsource.classList.add("d-none");
-                if (printsource == PrintSource.SD) {
-                    const button = document.getElementById("galleryflashbutton");
-                    button.focus();
-                    button.click();
-                }
-            }
+            handlesd(event.data);
             break;
     }
 });

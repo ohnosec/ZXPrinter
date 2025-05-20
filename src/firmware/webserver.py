@@ -114,8 +114,12 @@ def setserialflow(request):
 def getlog(_):
     return JsonResponse(services.getlogfile())
 
+@server.route("/sd")
+def printouts(_):
+    return JsonResponse(services.getcardinfo())
+
 @server.route("/about")
-def about(_):
+def getcardinfo(_):
     return JsonResponse(services.about())
 
 @server.catchall()

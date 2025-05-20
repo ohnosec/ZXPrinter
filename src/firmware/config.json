@@ -1,6 +1,7 @@
 {
   "filenames": [
     "command.py",
+    "crc16.py",
     "event.py",
     "fileprinter.py",
     "init.py",
