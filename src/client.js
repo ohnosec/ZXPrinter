@@ -226,5 +226,6 @@ export {
     execrequest,
     fetchcancel,
     fetchrequest,
-    ishttpallowed
+    ishttpallowed,
+    gettargetpath
 }

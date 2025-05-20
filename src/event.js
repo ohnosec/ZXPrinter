@@ -9,6 +9,9 @@ const eventhandler = new Handler();
 const eventtimes = new Map();
 const eventqueue = [];
 
+const connecthandler = new Handler();
+const disconnecthandler = new Handler();
+
 setInterval(async () => {
     if (eventqueue.length > 0) {
         const event = eventqueue.shift();
@@ -49,9 +52,11 @@ if (ishttpallowed() && hasaddress()) {
         };
         eventsocket.onopen = () => {
             console.log("Websocket connected");
+            connecthandler.call();
         };
         eventsocket.onclose = () => {
             console.log("Websocket disconnected");
+            disconnecthandler.call();
             setTimeout(connect, retrytime);
         };
         eventsocket.onerror = () => {
@@ -95,5 +100,7 @@ serial.readhandler.add(async (readstring) => {
 });
 
 export {
+    connecthandler,
+    disconnecthandler,
     eventhandler
 }

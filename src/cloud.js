@@ -1,5 +1,40 @@
 import { hidedropdown, showerror, errordefs, toggledropdown } from "./utils.js"
-import { isrunninglocal, getaddress, setaddress, fetchrequest, requests, ishttpallowed } from "./client.js"
+import { isrunninglocal, hasaddress, getaddress, setaddress, fetchrequest, requests, ishttpallowed, gettargetpath } from "./client.js"
+import { connecthandler, disconnecthandler } from "./event.js"
+
+async function cloudup() {
+    try {
+        if (!hasaddress()) return false;
+        const response = await fetchrequest(gettargetpath(), requests.about);
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
+async function cloudrefreshstate() {
+    cloudclearstate();
+    if (await cloudup()) {
+        cloudupstate.classList.add("active");
+    } else {
+        clouddownstate.classList.add("active");
+    }
+}
+
+function cloudclearstate() {
+    const cloudupstate = document.getElementById("cloudupstate");
+    const clouddownstate = document.getElementById("clouddownstate");
+    cloudupstate.classList.remove("active");
+    clouddownstate.classList.remove("active");
+}
+
+connecthandler.add(async () => {
+    await cloudrefreshstate();
+});
+
+disconnecthandler.add(async () => {
+    cloudclearstate();
+});
 
 function cloudhide() {
     hidedropdown('clouddropdown');
