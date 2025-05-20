@@ -144,7 +144,7 @@ function ishttpallowed() {
     return true;
 }
 
-async function fetchrequest(basepath, request, params = {}, ) {
+async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
     if (!ishttpallowed()) {
         throw new ShowError("Secure web hosting (https) doesn't support using the web to access ZX Printer");
     }
@@ -174,24 +174,28 @@ async function fetchrequest(basepath, request, params = {}, ) {
       headers: {},
       signal: AbortSignal.any([
         userCancelController.signal,
-        AbortSignal.timeout(5000)
+        AbortSignal.timeout(timeout)
       ])
     };
     if (request.method == "POST" || request.method == "PUT") {
       requestinit['body'] = JSON.stringify(body);
       requestinit.headers["Content-Type"] = "application/json"
     }
-    return await fetch(`${basepath}/${path}`, requestinit);
+    const startTime = (new Date()).getTime();
+    let response = await fetch(`${basepath}/${path}`, requestinit);
+    const responseMs = (new Date()).getTime() - startTime;
+    console.log(`Request to '${path}' took ${responseMs} ms`);
+    return response;
 }
 
-async function execrequest(request, params = {}) {
+async function execrequest(request, params = {}, timeout = 5000, showerrortoast = true) {
   try {
-    setbusystate(true);
+    if (timeout>500) setbusystate(true);
     if (iscloudconnection()) {
         if (!hasaddress()) {
             throw new ShowError("The web address has not been set");
         }
-        const response = await fetchrequest(gettargetpath(), request, params);
+        const response = await fetchrequest(gettargetpath(), request, params, timeout);
         if (!response.ok) {
             throw new Error(`The web request was not ok (${response.status}:${response.statusText})`)
         }
@@ -204,15 +208,17 @@ async function execrequest(request, params = {}) {
         for (const paramname of request.paramnames) {
             cmdparams.push(params[paramname]);
         }
-        return await command.execute(request.command, cmdparams);
+        return await command.execute(request.command, cmdparams, timeout);
     }
   } catch(error) {
     if (error.name != "AbortError") {
-        showerror(errordefs.requesterror, null, error);
+        if (showerrortoast) {
+            showerror(errordefs.requesterror, null, error);
+        }
     }
     throw error;
   } finally {
-    setbusystate(false);
+    if (timeout>500) setbusystate(false);
   }
 }
 

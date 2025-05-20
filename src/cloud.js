@@ -2,23 +2,9 @@ import { hidedropdown, showerror, errordefs, toggledropdown } from "./utils.js"
 import { isrunninglocal, hasaddress, getaddress, setaddress, fetchrequest, requests, ishttpallowed, gettargetpath } from "./client.js"
 import { connecthandler, disconnecthandler } from "./event.js"
 
-async function cloudup() {
-    try {
-        if (!hasaddress()) return false;
-        const response = await fetchrequest(gettargetpath(), requests.about);
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
-
 async function cloudrefreshstate() {
     cloudclearstate();
-    if (await cloudup()) {
-        cloudupstate.classList.add("active");
-    } else {
-        clouddownstate.classList.add("active");
-    }
+    cloudupstate.classList.add("active");
 }
 
 function cloudclearstate() {
