@@ -222,8 +222,10 @@ if (navigator.serial) {
 async function serialrefreshstate() {
     serialclearstate();
     if (await serialup()) {
+        const serialupstate = document.getElementById("serialupstate");
         serialupstate.classList.add("active");
     } else {
+        const serialdownstate = document.getElementById("serialdownstate");
         serialdownstate.classList.add("active");
     }
 }

@@ -12,13 +12,13 @@ class SDManager:
     def __init__(self, bus, sck, mosi, miso, cs, cd, mount_point='/sd'):
         self.mount_point = mount_point
 
-        cspin = Pin(cs, Pin.OUT)
         clkpin = Pin(sck, Pin.OUT)
         mosipin = Pin(mosi, Pin.OUT)
         misopin = Pin(miso, Pin.IN, Pin.PULL_UP)
 
-        spi = SPI(bus, sck=clkpin, mosi=mosipin, miso=misopin)
-        self.card = SDCard(spi, cspin, init=False)
+        self.cspin = Pin(cs, Pin.OUT)
+        self.spi = SPI(bus, baudrate=24_000_000, sck=clkpin, mosi=mosipin, miso=misopin)
+        self.card = None
 
         self.mountex = None
         self.mounted = False
@@ -39,23 +39,24 @@ class SDManager:
         try:
             self.mountex = None
             logging.info("Init SD card")
-            self.card.init_card()
+            self.card = SDCard(self.spi, self.cspin)
             logging.info("Mount SD card")
             os.mount(self.card, self.mount_point) # type: ignore
             self.mounted = True
         except Exception as ex:
-            logging.error(f"mount exception: {ex}")
+            logging.error(f"Mount exception: {ex}")
             self.mountex = ex
         return self.mounted
 
     def unmount(self):
         try:
             self.mountex = None
-            self.mounted = False
             logging.info("Unmount SD card")
             os.umount(self.mount_point) # type: ignore
+            self.card = None
+            self.mounted = False
         except Exception as ex:
-            logging.error(f"unmount exception: {ex}")
+            logging.error(f"Unmount exception: {ex}")
             self.mountex = ex
         return self.mounted
 

@@ -93,6 +93,10 @@ async def setflow(params):
 async def getlog(_):
     return services.getlogfile()
 
+@command("cardinfo")
+async def getcardinfo(_):
+    return services.getcardinfo()
+
 @command("about")
 async def about(_):
     return services.about()

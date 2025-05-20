@@ -38,9 +38,11 @@ else:
 
 webenabled = hasnetwork()
 
+sdmanager = sd.create()
+
 secretsmanager.initialize()
-services.initialise(connectedpixel)
-fileprinter.initialise(sd.create())
+services.initialise(connectedpixel, sdmanager)
+fileprinter.initialise(sdmanager)
 if webenabled:
     import webserver
     webserver.initialize(connectedpixel)
