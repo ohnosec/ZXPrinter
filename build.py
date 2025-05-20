@@ -1,6 +1,7 @@
 import sys, os
 import json
 import re
+import fnmatch
 
 basepath = os.path.abspath(os.path.dirname(sys.argv[0]))
 basepath += "/src"
@@ -8,15 +9,13 @@ basepath += "/src"
 definitions = [
     {
         "config": "config.json",
-        "include": ["main.py", "config.json"],
-        "exclude": ["font.js"],
-        "extensions": [".html", ".css", ".js", ".svg", ".ico", ".woff"]
+        "include": ["main.py", "config.json", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff"],
+        "exclude": ["font.js"]
     },
     {
         "config": "firmware/config.json",
-        "include": [],
-        "exclude": ["firmware/testsslclient.py", "firmware/testsslserver.py"],
-        "extensions": [".py"]
+        "include": ["*.py"],
+        "exclude": ["firmware/test*.py"]
     }
 ]
 
@@ -42,6 +41,9 @@ def minifyfont(fontfilename):
             minfile.write(f"const {shortname}=")
             minfile.write(hexstrings)
 
+def matches(name, names):
+    return len([n for n in names if fnmatch.fnmatch(name, n)]) > 0
+
 def buildconfig():
     allfiles = []
     for (root, _, files) in os.walk(basepath):
@@ -60,8 +62,7 @@ def buildconfig():
         with open(f"{basepath}/{configfile}", "w") as configstream:
             filenames = []
             for file in allfiles:
-                (_, extension) = os.path.splitext(file)
-                if (file in definition["include"] or extension in definition["extensions"]) and not file in definition["exclude"]:
+                if matches(file, definition["include"]) and not matches(file, definition["exclude"]):
                     if len(configpath)>0:
                         file = file[len(configpath)+1:]
                     if len(file)>0:
