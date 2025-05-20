@@ -42,7 +42,7 @@ def minifyfont(fontfilename):
             minfile.write(hexstrings)
 
 def matches(name, names):
-    return len([n for n in names if fnmatch.fnmatch(name, n)]) > 0
+    return any(fnmatch.fnmatch(name, n) for n in names)
 
 def buildconfig():
     allfiles = []
