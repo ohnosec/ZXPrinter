@@ -1,6 +1,7 @@
 import { islocal } from "./local.js"
 import * as serial from "./serial.js"
 import * as command from "./command.js"
+import * as settings from "./settings.js"
 import { setbusystate, showerror, errordefs, ShowError } from "./utils.js"
 
 const requests = {
@@ -108,7 +109,7 @@ function hasaddress() {
 }
 
 function gettargetpath() {
-    return isrunninglocal() ? '' : `http://${getaddress()}`;
+    return isrunninglocal() ? "" : `http://${getaddress() || "undefined"}`;
 }
 
 function gettargeturl() {
@@ -119,16 +120,16 @@ function gettargeturl() {
 }
 
 function iscloudconnection() {
-    const useserial = document.getElementById('useserial');
+    const useserial = document.getElementById("useserial");
     return !(useserial.checked && serial.isconnected) && ishttpallowed();
 }
 
 function getaddress() {
-    return localStorage.getItem('address');
+    return settings.get("address", "");
 }
 
 function setaddress(address) {
-    localStorage.setItem('address', address);
+    settings.set("address", address);
 }
 
 function fetchcancel() {
@@ -162,7 +163,7 @@ async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
     }
     if (request.body) {
         for (const property in body) {
-            if (typeof property === 'string' || property instanceof String) {
+            if (typeof property === "string" || property instanceof String) {
                 for(const paramname of request.paramnames) {
                     body[property] = body[property].replace(`{${paramname}}`, params[paramname]);
                 }
@@ -178,7 +179,7 @@ async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
       ])
     };
     if (request.method == "POST" || request.method == "PUT") {
-      requestinit['body'] = JSON.stringify(body);
+      requestinit["body"] = JSON.stringify(body);
       requestinit.headers["Content-Type"] = "application/json"
     }
     const startTime = (new Date()).getTime();
@@ -232,6 +233,5 @@ export {
     execrequest,
     fetchcancel,
     fetchrequest,
-    ishttpallowed,
-    gettargetpath
+    ishttpallowed
 }

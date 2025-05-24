@@ -21,6 +21,7 @@
     "printer.js",
     "repl.js",
     "serial.js",
+    "settings.js",
     "utils.js",
     "assets/cable-data.svg",
     "assets/check-bold.svg",

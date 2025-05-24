@@ -1,5 +1,5 @@
 import { hidedropdown, showerror, errordefs, toggledropdown } from "./utils.js"
-import { isrunninglocal, hasaddress, getaddress, setaddress, fetchrequest, requests, ishttpallowed, gettargetpath } from "./client.js"
+import { isrunninglocal, getaddress, setaddress, fetchrequest, requests, ishttpallowed } from "./client.js"
 import { connecthandler, disconnecthandler } from "./event.js"
 
 async function cloudrefreshstate() {
