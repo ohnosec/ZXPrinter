@@ -23,6 +23,7 @@
     "serial.js",
     "settings.js",
     "utils.js",
+    "websocket.js",
     "assets/cable-data.svg",
     "assets/check-bold.svg",
     "assets/circle-outline-green.svg",

@@ -1,6 +1,7 @@
 import { hidedropdown, showerror, errordefs, toggledropdown } from "./utils.js"
 import { isrunninglocal, getaddress, setaddress, fetchrequest, requests, ishttpallowed } from "./client.js"
-import { connecthandler, disconnecthandler } from "./event.js"
+import * as event from "./event.js"
+import * as websocket from "./websocket.js"
 
 async function cloudrefreshstate() {
     cloudclearstate();
@@ -14,11 +15,11 @@ function cloudclearstate() {
     clouddownstate.classList.remove("active");
 }
 
-connecthandler.add(async () => {
+websocket.connecthandler.add(async () => {
     await cloudrefreshstate();
 });
 
-disconnecthandler.add(async () => {
+websocket.disconnecthandler.add(async () => {
     cloudclearstate();
 });
 
@@ -33,6 +34,7 @@ async function cloudmenu() {
     } else {
         testelement.classList.remove("d-none");
     }
+    cloudaddresschange();
     toggledropdown('clouddropdown');
 }
 
@@ -40,17 +42,14 @@ async function cloudaddresschange() {
     const cloudaddresselement = document.getElementById('cloudaddress');
     const cloudtestbutton = document.getElementById('cloudtest');
     const cloudopenbutton = document.getElementById('cloudopen');
-    const cloudsavebutton = document.getElementById('cloudsave');
 
     const address = cloudaddresselement.value.trim();
     if (address=="") {
         cloudtestbutton.disabled = true;
         cloudopenbutton.disabled = true;
-        cloudsavebutton.disabled = true;
     } else {
         cloudtestbutton.disabled = false;
         cloudopenbutton.disabled = false;
-        cloudsavebutton.disabled = false;
     }
     if (!ishttpallowed()) {
         cloudtestbutton.disabled = true;
@@ -67,14 +66,15 @@ async function cloudopen() {
     const cloudaddresselement = document.getElementById('cloudaddress');
     const address = cloudaddresselement.value.trim();
     window.open(`http://${address}`, '_blank');
+    cloudhide();
 }
 
 async function cloudsave() {
     const cloudaddresselement = document.getElementById('cloudaddress');
     const address = cloudaddresselement.value.trim();
-    if (address) {
-        setaddress(address);
-    }
+    setaddress(address);
+    event.connect();
+    cloudhide();
 }
 
 function cloudload() {

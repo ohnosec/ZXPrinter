@@ -1,4 +1,5 @@
 import * as serial from "./serial.js"
+import * as websocket from "./websocket.js"
 import { Handler } from "./utils.js"
 import { ishttpallowed, hasaddress, gettargeturl } from "./client.js"
 
@@ -8,9 +9,6 @@ const EVENTPROCESSMS = 500;
 const eventhandler = new Handler();
 const eventtimes = new Map();
 const eventqueue = [];
-
-const connecthandler = new Handler();
-const disconnecthandler = new Handler();
 
 setInterval(async () => {
     if (eventqueue.length > 0) {
@@ -38,33 +36,28 @@ async function queueevent(data) {
     }
 }
 
-if (ishttpallowed() && hasaddress()) {
-    const retrytime = 1000;
-    const connect = () => {
-        console.log("Websocket connecting");
-        const targeturl = gettargeturl();
-        const targetprotocol = targeturl.protocol === "http:" ? "ws:" : "wss:";
-        const eventsocket = new WebSocket(`${targetprotocol}//${targeturl.hostname}/events`);
-        eventsocket.onmessage = async event => {
-            const data =  event.data;
-            console.log(`Websocket event ${data}`);
-            await queueevent(data);
-        };
-        eventsocket.onopen = () => {
-            console.log("Websocket connected");
-            connecthandler.call();
-        };
-        eventsocket.onclose = () => {
-            console.log("Websocket disconnected");
-            disconnecthandler.call();
-            setTimeout(connect, retrytime);
-        };
-        eventsocket.onerror = () => {
-            console.log("Websocket error");
-        };
-    };
-    connect();
+
+websocket.connecthandler.add(() => console.log("Websocket connected"));
+websocket.disconnecthandler.add(() => console.log("Websocket disconnected"));
+websocket.errorhandler.add(() => console.log("Websocket error"));
+websocket.messagehandler.add(async (event) => {
+    const data =  event.data;
+    console.log(`Websocket event ${data}`);
+    await queueevent(data);
+});
+
+function connect() {
+    if (!ishttpallowed() || !hasaddress()) {
+        websocket.disconnect();
+        return;
+    }
+    console.log("Websocket connecting");
+    const targeturl = gettargeturl();
+    const targetprotocol = targeturl.protocol === "http:" ? "ws:" : "wss:";
+    websocket.connect(`${targetprotocol}//${targeturl.hostname}/events`);
 }
+
+connect();
 
 const SERIALFLUSHMS = 500;
 
@@ -100,7 +93,6 @@ serial.readhandler.add(async (readstring) => {
 });
 
 export {
-    connecthandler,
-    disconnecthandler,
-    eventhandler
+    eventhandler,
+    connect
 }
