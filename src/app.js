@@ -6,6 +6,9 @@ export * from "./cloud.js"
 export * from "./printer.js"
 
 import { isdropdown, hidedropdowns } from "./utils.js"
+import * as settings from "./settings.js"
+
+const TOOLTIPSTATENAME = "showtooltip";
 
 // fix "Blocked aria-hidden on an element...""
 document.addEventListener('hide.bs.modal', (event) => {
@@ -33,7 +36,7 @@ for(const tooltipelement of tooltipelements) {
     });
 }
 
-function showtooltip(checkbox) {
+function updatetooltip(enabled) {
     const tooltipelements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     const tooltipforeach = fn => {
         for(const tooltipelement of tooltipelements) {
@@ -41,12 +44,22 @@ function showtooltip(checkbox) {
             fn(tooltip);
         }
     };
-    if (checkbox.checked) {
+    if (enabled) {
         tooltipforeach(tooltip => tooltip.enable());
     } else {
         tooltipforeach(tooltip => tooltip.disable());
     }
 }
+
+function showtooltip(checkbox) {
+    updatetooltip(checkbox.checked);
+    settings.set(TOOLTIPSTATENAME, checkbox.checked);
+}
+
+const tooltipstate = settings.get(TOOLTIPSTATENAME, true);
+const tooltipenable = document.getElementById("tooltipenable");
+tooltipenable.checked = tooltipstate;
+updatetooltip(tooltipstate);
 
 function setupMenu(element) {
     const menus = element.querySelectorAll(".menu")

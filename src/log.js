@@ -1,6 +1,9 @@
 import { execrequest, requests } from "./client.js"
 import { logger as seriallogger } from "./serial.js"
 import { Logger } from "./utils.js"
+import * as settings from "./settings.js"
+
+const LOGSTATENAME = "showlog";
 
 const LogTarget = Object.freeze({
     ZXPRINTER: 0,
@@ -26,15 +29,20 @@ window.console.info = newconsolelog('Info', window.console, window.console.info)
 window.console.warn = newconsolelog('Warn', window.console, window.console.warn);
 window.console.error = newconsolelog('Error', window.console, window.console.error);
 
-function showlog(checkbox) {
+function updatelog(enabled) {
     const logs = document.getElementById('logmenu');
-    if (checkbox.checked) {
+    if (enabled) {
         logs.classList.remove("d-none");
     } else {
         const logpage = document.getElementById("log");
         logpage.hidden = true;
         logs.classList.add("d-none");
     }
+}
+
+function showlog(checkbox) {
+    updatelog(checkbox.checked);
+    settings.set(LOGSTATENAME, checkbox.checked);
 }
 
 function startrefresh() {
@@ -105,6 +113,11 @@ async function refreshlog(showmenu=true) {
     logtextelement.value = linetext;
     logtextelement.scrollTop = logtextelement.scrollHeight;
 }
+
+const showlogstate = settings.get(LOGSTATENAME, false);
+const logenable = document.getElementById("logenable");
+logenable.checked = showlogstate;
+updatelog(showlogstate);
 
 export {
     logzxprinter, logserial, logconsole,
