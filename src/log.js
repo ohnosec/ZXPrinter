@@ -51,7 +51,7 @@ function startrefresh() {
         logintervalid = setInterval(() => {
             const scrollpct = logtext.scrollTop / (logtext.scrollHeight - logtext.offsetHeight) * 100;
             if (scrollpct == 100) {
-                refreshlog(false);
+                refreshlog();
             }
         }, 500);
     }
@@ -91,15 +91,7 @@ async function logconsole() {
     refreshlog();
 }
 
-function showlogmenu() {
-    const galleryelement = document.getElementById('gallery');
-    const logelement = document.getElementById('log');
-    galleryelement.hidden = true;
-    logelement.hidden = false;
-}
-
-async function refreshlog(showmenu=true) {
-    if (showmenu) showlogmenu();
+async function refreshlog() {
     const logtextelement = document.getElementById('logtext');
     let linetext;
     if (logtarget == LogTarget.ZXPRINTER) {

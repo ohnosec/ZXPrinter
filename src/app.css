@@ -244,6 +244,10 @@
     display: block;
 }
 
+.homebody {
+    color:  #474646;
+}
+
 #printerbaud2 input {
   background-color: var(--bs-btn-bg);
   color: white;

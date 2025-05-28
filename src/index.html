@@ -34,7 +34,7 @@
             <div class="col d-flex flex-row align-items-center justify-content-end pe-3">
               <div id="busyspinner" class="spinner-border text-secondary ms-auto d-none me-4" role="status" aria-hidden="true"></div>
               <div class="dropdown">
-                <button class="menu nav-link pe-2" id="serialdropdown" onclick="void app.serialconnect()" aria-expanded="false" style="width: 65px; display: none">
+                <button class="nav-link ps-2 pe-2" id="serialdropdown" onclick="void app.serialconnect()" aria-expanded="false" style="width: 65px; display: none">
                   <div class="d-flex">
                     <img src="assets/cable-data.svg" width="40px" height="40px" style="filter: invert(100%)" />
                     <img id="serialupstate" class="connectstate" src="assets/lightning-green.svg" width="10px" height="10px">
@@ -118,7 +118,7 @@
                 </div>
               </div>
               <div class="dropdown">
-                <button class="menu nav-link pe-2" id="clouddropdown" onclick="void app.cloudmenu()" aria-expanded="false" style="width: 65px; display: none">
+                <button class="nav-link ps-2 pe-2" id="clouddropdown" onclick="void app.cloudmenu()" aria-expanded="false" style="width: 65px; display: none">
                   <div class="d-flex">
                     <img src="assets/cloud-outline.svg" width="40px" height="40px" style="filter: invert(100%)" />
                     <img id="cloudupstate" class="connectstate" src="assets/lightning-green.svg" width="10px" height="10px">
@@ -155,15 +155,26 @@
       </div>
     </nav>
     <div class="container-fluid h-100">
-      <div class="row h-100">
+      <div id="maincontainer" class="row h-100">
         <div id="menucontainer" class="position-relative col-3 col-xxl-2 d-flex pt-2 align-items-start flex-column navbar-dark" aria-expanded="true">
-          <div id="menugallery" class="menucontent active w-100">
+          <div class="menucontent menuhome w-100 active">
+            <h3 class="menutitle">About</h3>
+            <div class="ps-2 pt-1">
+              <div>Version: 1.0</div>
+              <div>Build: {{builddate}}</div>
+              <div class="pt-3">
+                In association with <a class="link-info link-offset-1" href="https://timexsinclair.com/" target="_blank">TimexSinclair.com</a>
+                and in collaboration with the TS-Team.
+              </div>
+            </div>
+          </div>
+          <div class="menucontent menugallery w-100">
             <h3 class="menutitle">Gallery</h3>
             <div class="ps-2 pt-1">
               <div class="mb-4">
                 <div id="galleryflashsource" class="gallerysource row w-100">
                   <div class="col-auto">
-                    <button id="galleryflashbutton" class="menu nav-link ps-0" onclick="void app.galleryflash()" data-target="menugallery">
+                    <button id="galleryflashbutton" class="nav-link ps-0" onclick="void app.galleryflash()">
                       <i class="bi bi-folder2"></i><span id="galleryflash" class="gallery active ms-1 ps-1 pe-2">Captures</span>
                     </button>
                   </div>
@@ -197,7 +208,7 @@
                 </div>
                 <div id="gallerysdsource" class="gallerysource row w-100 d-none">
                   <div class="col-auto">
-                    <button id="gallerysdbutton" class="menu nav-link ps-0" onclick="void app.gallerysd()" data-target="menugallery">
+                    <button id="gallerysdbutton" class="nav-link ps-0" onclick="void app.gallerysd()">
                       <i class="bi bi-folder2"></i><span id="gallerysd" class="gallery ms-1 ps-1 pe-2">SD Card</span>
                     </button>
                   </div>
@@ -325,7 +336,7 @@
               </div>
             </div>
           </div>
-          <div id="menuprinter" class="menucontent w-100">
+          <div class="menucontent menuprinter w-100">
             <h3 class="menutitle">Printer</h3>
             <div class="ps-2 pt-1">
               <div class="mb-3">
@@ -470,27 +481,27 @@
               </div>
             </div>
           </div>
-          <div id="menulog" class="menucontent w-100">
+          <div class="menucontent menulog w-100">
             <h3 class="menutitle">Logs</h3>
             <div class="ps-2 pt-1">
               <div class="mb-3 ">
                 <div class="logsource row flex-nowrap w-100">
                   <div class="col-11">
-                    <button class="menu nav-link ps-0" onclick="void app.logzxprinter()" data-target="menulog">
+                    <button class="nav-link ps-0" onclick="void app.logzxprinter()">
                       <i class="bi bi-card-text"></i><span id="logzxprinter" class="log ms-1 ps-1 pe-2 active">ZX Printer</span>
                     </button>
                   </div>
                 </div>
                 <div class="logsource row flex-nowrap w-100">
                   <div class="col-11">
-                    <button class="menu nav-link ps-0" onclick="void app.logserial()" data-target="menulog">
+                    <button class="nav-link ps-0" onclick="void app.logserial()">
                       <i class="bi bi-card-text"></i><span id="logserial" class="log ms-1 ps-1 pe-2">Serial</span>
                     </button>
                   </div>
                 </div>
                 <div class="logsource row flex-nowrap w-100">
                   <div class="col-11">
-                    <button class="menu nav-link ps-0" onclick="void app.logconsole()" data-target="menulog">
+                    <button class="nav-link ps-0" onclick="void app.logconsole()">
                       <i class="bi bi-card-text"></i><span id="logconsole" class="log ms-1 ps-1 pe-2">Console</span>
                     </button>
                   </div>
@@ -498,7 +509,7 @@
               </div>
             </div>
           </div>
-          <div id="menusettings" class="menucontent">
+          <div class="menucontent menusettings">
             <h3 class="menutitle">Settings</h3>
             <div class="ps-2 pt-1">
               <div class="mb-3">
@@ -516,6 +527,11 @@
             </div>
           </div>
           <div class="position-absolute bottom-0 start-0 pb-2 ps-4 row flex-nowrap w-100">
+            <div class="col col-auto ps-0 pe-0">
+              <button class="menu nav-link active" onclick="" data-target="menuhome" data-bs-toggle="tooltip" data-bs-title="About">
+                <i class="fs-4 bi bi-house"></i>
+              </button>
+            </div>
             <div class="col col-auto ps-0 pe-0">
               <button class="menu nav-link" onclick="void app.renderall()" data-target="menugallery" data-bs-toggle="tooltip" data-bs-title="Gallery">
                 <i class="fs-4 bi bi-images"></i>
@@ -537,16 +553,25 @@
               </button>
             </div> -->
             <div class="col col-auto ps-0 pe-0">
-              <button class="menu nav-link active" data-target="menusettings" data-bs-toggle="tooltip" data-bs-title="Settings">
+              <button class="menu nav-link" data-target="menusettings" data-bs-toggle="tooltip" data-bs-title="Settings">
                 <i class="fs-4 bi bi-gear"></i>
               </button>
             </div>
           </div>
         </div>
-        <div id="log" class="col overflow-auto h-100 p-3" hidden>
+        <div id="home" class="menucontent menuhome col overflow-auto h-100 p-3 active">
+          <div class="homebody d-flex flex-column align-items-center justify-content-center h-100">
+            <div style="font-family: sinclairlogo; font-size: 180px; line-height: 75px;">Welcome</div>
+            <div class="fw-bold" style="font-size: 40px;">to the Pico ZX PRINTER</div>
+            <div class="pt-4 fw-bold text-center" style="font-size: 30px; width: 700px;">
+              This app is designed to talk to the Pico ZX Printer expansion board, which is powered by the Raspberry Pi Pico</div>
+            <div style="height: 100px;"></div>
+          </div>
+        </div>
+        <div id="log" class="menucontent menulog col overflow-auto h-100 p-3">
           <textarea class="form-control shadow-none border-0" id="logtext" style="resize: none;box-sizing: border-box;height: 100%;width: 100%;" readonly=""></textarea>
         </div>
-        <div id="gallery" class="col overflow-auto p-3 bodyscroll" hidden>
+        <div id="gallery" class="col overflow-auto p-3 bodyscroll menucontent menugallery">
           <div id="prtdoc" class="row">
             <div id="prttemplate" class="col-lg-auto" hidden>
               <div class="row justify-content-between collapse prtcollapse">

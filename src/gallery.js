@@ -335,7 +335,6 @@ async function reloadall() {
 
 async function renderall() {
     fetchcancel();
-    showgallery();
     const format = document.querySelector("#format input[type='radio']:checked").value;
     try {
         const names = await execrequest(requests.loadprintouts, { store: getstorename() });
@@ -598,13 +597,6 @@ async function converttext(name, element) {
         }
         element.innerHTML = html;
     }, 100);
-}
-
-function showgallery() {
-    const galleryelement = document.getElementById('gallery');
-    const logelement = document.getElementById('log');
-    logelement.hidden = true;
-    galleryelement.hidden = false;
 }
 
 async function galleryflash() {
