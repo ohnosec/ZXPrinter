@@ -9,26 +9,48 @@ let readbuffer = "";
 const LogType = Object.freeze({
     UNKNOWN: 0,
     READ: 1,
-    WRITE: 2
+    WRITE: 2,
+    CONNECT: 3,
+    DISCONNECT: 4
 });
 
 let lastlogtype = LogType.UNKNOWN;
 
 const logger = new Logger();
-function log(type, message) {
+let lastcr = false;
+function log(type, message = "") {
     if (type != lastlogtype) {
         lastlogtype = type;
         if (type == LogType.READ) {
-            logger.log("🡄 ");
-        } else if (type == LogType.WRITE) {
-            logger.log("🡆 ");
+            logger.log("🡄");
+        } else if (type === LogType.WRITE) {
+            logger.log("🡆");
+        } else if (type === LogType.CONNECT || type === LogType.DISCONNECT) {
+            let logtext = type === LogType.CONNECT ? "🡇" : "🡅";
+            if (!logger.isempty()) logtext = `\n${logtext}`;
+            logger.log(`${logtext}\n`);
+            lastcr = false;
         }
     }
-    logger.log(message.replace(/[\x00-\x1F]/g, m => {
-        if (m == '\r' || m == '\n') return m;
-        const asciicode = m.charCodeAt(0);
-        const atcode = "@".charCodeAt(0);
-        return "^"+String.fromCharCode(atcode+asciicode)
+    logger.log(message.replace(/[\S\s]/g, char => {
+        let logtext = char;
+        const iscr = char === "\r";
+        const islf = char === "\n";
+        const extraline = lastcr ? "\n" : "";
+        const charcode = char.charCodeAt(0);
+        if (charcode > 0x1F) {
+            logtext = extraline + logtext;
+        } else {
+            const ctrlcode = "@".charCodeAt(0);
+            logtext = "^" + String.fromCharCode(ctrlcode+charcode);
+            if (iscr || islf) {
+                if ((iscr && lastcr) || islf) logtext += char;
+            } else {
+                logtext = extraline + logtext;
+            }
+        }
+        lastcr = iscr;
+        return logtext;
     }));
 }
 
@@ -58,6 +80,7 @@ async function connect() {
 
     isconnected = true;
     connecthandler.call(); // dont wait so the handler can do serial IO
+    log(LogType.CONNECT);
 
     try {
         while (true) {
@@ -83,6 +106,7 @@ async function connect() {
     flush();
     isconnected = false;
     await disconnecthandler.call();
+    log(LogType.DISCONNECT);
 }
 
 async function write(data) {

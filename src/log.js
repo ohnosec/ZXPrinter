@@ -50,9 +50,7 @@ function startrefresh() {
         const logtext = document.getElementById('logtext');
         logintervalid = setInterval(() => {
             const scrollpct = logtext.scrollTop / (logtext.scrollHeight - logtext.offsetHeight) * 100;
-            if (scrollpct == 100) {
-                refreshlog();
-            }
+            refreshlog(scrollpct == 100);
         }, 500);
     }
 }
@@ -91,7 +89,7 @@ async function logconsole() {
     refreshlog();
 }
 
-async function refreshlog() {
+async function refreshlog(scroll = true) {
     const logtextelement = document.getElementById('logtext');
     let linetext;
     if (logtarget == LogTarget.ZXPRINTER) {
@@ -103,7 +101,9 @@ async function refreshlog() {
         linetext = consolelogger.contents;
     }
     logtextelement.value = linetext;
-    logtextelement.scrollTop = logtextelement.scrollHeight;
+    if (scroll) {
+        logtextelement.scrollTop = logtextelement.scrollHeight;
+    }
 }
 
 const showlogstate = settings.get(LOGSTATENAME, false);
