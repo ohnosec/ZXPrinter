@@ -14,7 +14,7 @@ async function fetchfile(url) {
 async function play() {
     try {
         await command.executerepl(async (repl) => {
-            const mainpy = await fetchfile('/main.py');
+            const mainpy = await fetchfile("/main.py");
             const mainpytext = await mainpy.text();
 
             await repl.execute(mainpytext);
@@ -28,24 +28,25 @@ async function play() {
     }
 }
 
-async function uploadconfig(repl, configfile, filenames, callback) {
-    let filename = "";
+async function uploadfiles(repl, files, callback) {
+    let sourcefile = "";
     try {
-        let filefolder = configfile.split("/").slice(0,-1).join("/");
-        if (filefolder !== "") filefolder += "/";
-        for(const filename of filenames) {
-            console.log(`Uploading ${filename}`);
+        for(const file of files) {
+            sourcefile = file.source;
+            const targetfile = file.target;
 
-            const filefetch = await fetchfile(`${filefolder}${filename}`);
+            console.log(`Uploading ${sourcefile}`);
+
+            const filefetch = await fetchfile(sourcefile);
             const filebuffer = await filefetch.arrayBuffer();
 
-            await repl.put(filename, new Uint8Array(filebuffer));
+            await repl.put(targetfile, new Uint8Array(filebuffer));
 
             callback();
         }
     }
     catch(error) {
-        console.log(`Failed to upload ${filename} ${error}`);
+        console.log(`Failed to upload ${sourcefile} ${error}`);
         throw error;
     }
 }
@@ -56,51 +57,36 @@ function updateprogress(progresselement, percent) {
     progresselement.textContent = percenttext;
 }
 
-async function getconfigs() {
-    const configfiles = [
-      'config.json',
-      'firmware/config.json'
-    ];
+async function getfiles() {
+    const configfile = "files.json";
 
-    const configs = [];
-    for(const configfile of configfiles) {
-        const configfetch = await fetchfile(configfile);
-        const config = await configfetch.json();
-        configs.push({
-            configfile: configfile,
-            filenames: config.filenames
-        });
-    }
+    const configfetch = await fetchfile(configfile);
+    const config = await configfetch.json();
 
-    return configs;
+    return config;
 }
 
 async function install() {
-    const installmodal = bootstrap.Modal.getInstance(document.getElementById('installmodal'));
-    const installbutton = document.getElementById('installbutton');
+    const installmodal = bootstrap.Modal.getInstance(document.getElementById("installmodal"));
+    const installbutton = document.getElementById("installbutton");
     installbutton.disabled = true;
     try {
         await command.executerepl(async (repl) => {
-            const progresselement = document.getElementById('installprogress');
+            const progresselement = document.getElementById("installprogress");
             updateprogress(progresselement, 0);
 
-            const configs = await getconfigs();
-            const configfilecount = configs.reduce((accumulator, currentValue) =>
-                accumulator + currentValue.filenames.length,
-                0,
-            );
+            const files = await getfiles();
 
-            let filecount = 0;
-            for(const config of configs) {
-                await uploadconfig(repl, config.configfile, config.filenames, () => {
-                    filecount += 1;
-                    updateprogress(progresselement, Math.floor(filecount / configfilecount * 100));
-                });
-            }
+            const todo = files.length;
+            let done = 0;
+            await uploadfiles(repl, files, () => {
+                done += 1;
+                updateprogress(progresselement, Math.floor(done / todo * 100));
+            });
 
             updateprogress(progresselement, 100);
 
-            console.log('Rebooting');
+            console.log("Rebooting");
             await command.reboot();
             installmodal.hide();
         });

@@ -22,8 +22,9 @@ class JsonResponse(Response):
         })
 
 def addstaticroute(filename):
-    # handler = lambda _: FileResponse(f"/{filename}", headers={'Cache-Control': 'max-age=120'}) # 2 minutes
-    handler = lambda _: FileResponse(f"/{filename}", headers={'Cache-Control': 'max-age=10800'}) # 3 hours
+    # maxage = 120    # 2 minutes
+    maxage = 10800  # 3 hours
+    handler = lambda _: FileResponse(f"/{filename}", headers={'Cache-Control': f'max-age={maxage}'})
     server.add_route(f"/{filename}", handler)
 
 def initialize(p):
@@ -32,11 +33,13 @@ def initialize(p):
 
     connectedpixel = p
 
-    with open("/config.json") as fp:
-        config = json.load(fp)
-        for filename in config['filenames']:
-            if filename != "local.js":
-                addstaticroute(filename)
+    with open("/files.json") as fp:
+        files = json.load(fp)
+        for file in files:
+            if file["type"] == "web":
+                filename = file["target"]
+                if filename != "local.js":
+                    addstaticroute(filename)
 
     network.hostname(secretsmanager.gethostname())
     wlan = network.WLAN(network.STA_IF)
@@ -115,7 +118,7 @@ def getlog(_):
     return JsonResponse(services.getlogfile())
 
 @server.route("/sd")
-def printouts(_):
+def sdcard(_):
     return JsonResponse(services.getcardinfo())
 
 @server.route("/about")

@@ -1,0 +1,386 @@
+[
+  {
+    "source": "app.css",
+    "target": "app.css",
+    "type": "web",
+    "checksum": "0xe69f"
+  },
+  {
+    "source": "app.js",
+    "target": "app.js",
+    "type": "web",
+    "checksum": "0xee6e"
+  },
+  {
+    "source": "client.js",
+    "target": "client.js",
+    "type": "web",
+    "checksum": "0xe8fe"
+  },
+  {
+    "source": "cloud.js",
+    "target": "cloud.js",
+    "type": "web",
+    "checksum": "0x3fdb"
+  },
+  {
+    "source": "command.js",
+    "target": "command.js",
+    "type": "web",
+    "checksum": "0xff0f"
+  },
+  {
+    "source": "datauri.js",
+    "target": "datauri.js",
+    "type": "web",
+    "checksum": "0x5893"
+  },
+  {
+    "source": "event.js",
+    "target": "event.js",
+    "type": "web",
+    "checksum": "0xba98"
+  },
+  {
+    "source": "favicon.ico",
+    "target": "favicon.ico",
+    "type": "web",
+    "checksum": "0xf79d"
+  },
+  {
+    "source": "files.json",
+    "target": "files.json",
+    "type": "web",
+    "checksum": "0x946c"
+  },
+  {
+    "source": "font.min.js",
+    "target": "font.min.js",
+    "type": "web",
+    "checksum": "0x894a"
+  },
+  {
+    "source": "gallery.js",
+    "target": "gallery.js",
+    "type": "web",
+    "checksum": "0xd4ab"
+  },
+  {
+    "source": "index.html",
+    "target": "index.html",
+    "type": "web",
+    "checksum": "0x9276"
+  },
+  {
+    "source": "install.js",
+    "target": "install.js",
+    "type": "web",
+    "checksum": "0x75fb"
+  },
+  {
+    "source": "jsbmp.js",
+    "target": "jsbmp.js",
+    "type": "web",
+    "checksum": "0x7fc5"
+  },
+  {
+    "source": "local.js",
+    "target": "local.js",
+    "type": "web",
+    "checksum": "0x2b42"
+  },
+  {
+    "source": "log.js",
+    "target": "log.js",
+    "type": "web",
+    "checksum": "0xa748"
+  },
+  {
+    "source": "main.py",
+    "target": "main.py",
+    "type": "web",
+    "checksum": "0xa5a6"
+  },
+  {
+    "source": "network.js",
+    "target": "network.js",
+    "type": "web",
+    "checksum": "0x04c4"
+  },
+  {
+    "source": "printer.js",
+    "target": "printer.js",
+    "type": "web",
+    "checksum": "0x6466"
+  },
+  {
+    "source": "repl.js",
+    "target": "repl.js",
+    "type": "web",
+    "checksum": "0x8154"
+  },
+  {
+    "source": "serial.js",
+    "target": "serial.js",
+    "type": "web",
+    "checksum": "0x7841"
+  },
+  {
+    "source": "settings.js",
+    "target": "settings.js",
+    "type": "web",
+    "checksum": "0xa772"
+  },
+  {
+    "source": "utils.js",
+    "target": "utils.js",
+    "type": "web",
+    "checksum": "0x36fd"
+  },
+  {
+    "source": "websocket.js",
+    "target": "websocket.js",
+    "type": "web",
+    "checksum": "0x5b7b"
+  },
+  {
+    "source": "assets/cable-data.svg",
+    "target": "assets/cable-data.svg",
+    "type": "web",
+    "checksum": "0xe672"
+  },
+  {
+    "source": "assets/check-bold.svg",
+    "target": "assets/check-bold.svg",
+    "type": "web",
+    "checksum": "0x3ae9"
+  },
+  {
+    "source": "assets/circle-outline-green.svg",
+    "target": "assets/circle-outline-green.svg",
+    "type": "web",
+    "checksum": "0x3b6c"
+  },
+  {
+    "source": "assets/circle-outline-red.svg",
+    "target": "assets/circle-outline-red.svg",
+    "type": "web",
+    "checksum": "0xaddd"
+  },
+  {
+    "source": "assets/cloud-outline.svg",
+    "target": "assets/cloud-outline.svg",
+    "type": "web",
+    "checksum": "0xb46e"
+  },
+  {
+    "source": "assets/lightning-green.svg",
+    "target": "assets/lightning-green.svg",
+    "type": "web",
+    "checksum": "0xb461"
+  },
+  {
+    "source": "assets/lightning-red.svg",
+    "target": "assets/lightning-red.svg",
+    "type": "web",
+    "checksum": "0x314a"
+  },
+  {
+    "source": "assets/printer.svg",
+    "target": "assets/printer.svg",
+    "type": "web",
+    "checksum": "0x89c2"
+  },
+  {
+    "source": "assets/sinclair-logo.woff",
+    "target": "assets/sinclair-logo.woff",
+    "type": "web",
+    "checksum": "0xef53"
+  },
+  {
+    "source": "assets/zx-spectrum-zx81-soft.woff",
+    "target": "assets/zx-spectrum-zx81-soft.woff",
+    "type": "web",
+    "checksum": "0xad6e"
+  },
+  {
+    "source": "assets/zx-spectrum-zx81.woff",
+    "target": "assets/zx-spectrum-zx81.woff",
+    "type": "web",
+    "checksum": "0xf7e7"
+  },
+  {
+    "source": "firmware/command.py",
+    "target": "command.py",
+    "type": "backend",
+    "checksum": "0x9739"
+  },
+  {
+    "source": "firmware/crc16.py",
+    "target": "crc16.py",
+    "type": "backend",
+    "checksum": "0x6748"
+  },
+  {
+    "source": "firmware/event.py",
+    "target": "event.py",
+    "type": "backend",
+    "checksum": "0xdda4"
+  },
+  {
+    "source": "firmware/fileprinter.py",
+    "target": "fileprinter.py",
+    "type": "backend",
+    "checksum": "0x934e"
+  },
+  {
+    "source": "firmware/init.py",
+    "target": "init.py",
+    "type": "backend",
+    "checksum": "0x875c"
+  },
+  {
+    "source": "firmware/ledprinter.py",
+    "target": "ledprinter.py",
+    "type": "backend",
+    "checksum": "0x41f4"
+  },
+  {
+    "source": "firmware/packbits.py",
+    "target": "packbits.py",
+    "type": "backend",
+    "checksum": "0x31a9"
+  },
+  {
+    "source": "firmware/parallelprinter.py",
+    "target": "parallelprinter.py",
+    "type": "backend",
+    "checksum": "0xc752"
+  },
+  {
+    "source": "firmware/parallelprinterdriver.py",
+    "target": "parallelprinterdriver.py",
+    "type": "backend",
+    "checksum": "0x87f7"
+  },
+  {
+    "source": "firmware/physicalprinter.py",
+    "target": "physicalprinter.py",
+    "type": "backend",
+    "checksum": "0xac0c"
+  },
+  {
+    "source": "firmware/pixel.py",
+    "target": "pixel.py",
+    "type": "backend",
+    "checksum": "0x0c5f"
+  },
+  {
+    "source": "firmware/pixeldriver.py",
+    "target": "pixeldriver.py",
+    "type": "backend",
+    "checksum": "0xb0f5"
+  },
+  {
+    "source": "firmware/producerconsumer.py",
+    "target": "producerconsumer.py",
+    "type": "backend",
+    "checksum": "0x77cb"
+  },
+  {
+    "source": "firmware/reset.py",
+    "target": "reset.py",
+    "type": "backend",
+    "checksum": "0xda65"
+  },
+  {
+    "source": "firmware/sd.py",
+    "target": "sd.py",
+    "type": "backend",
+    "checksum": "0x232b"
+  },
+  {
+    "source": "firmware/sdcard.py",
+    "target": "sdcard.py",
+    "type": "backend",
+    "checksum": "0x3d02"
+  },
+  {
+    "source": "firmware/sdmanager.py",
+    "target": "sdmanager.py",
+    "type": "backend",
+    "checksum": "0xc382"
+  },
+  {
+    "source": "firmware/secretsmanager.py",
+    "target": "secretsmanager.py",
+    "type": "backend",
+    "checksum": "0x6b68"
+  },
+  {
+    "source": "firmware/serialprinter.py",
+    "target": "serialprinter.py",
+    "type": "backend",
+    "checksum": "0x4db3"
+  },
+  {
+    "source": "firmware/serialserver.py",
+    "target": "serialserver.py",
+    "type": "backend",
+    "checksum": "0xcccc"
+  },
+  {
+    "source": "firmware/services.py",
+    "target": "services.py",
+    "type": "backend",
+    "checksum": "0xbb84"
+  },
+  {
+    "source": "firmware/system.py",
+    "target": "system.py",
+    "type": "backend",
+    "checksum": "0x23ca"
+  },
+  {
+    "source": "firmware/webserver.py",
+    "target": "webserver.py",
+    "type": "backend",
+    "checksum": "0x94f0"
+  },
+  {
+    "source": "firmware/zxprinterdriver.py",
+    "target": "zxprinterdriver.py",
+    "type": "backend",
+    "checksum": "0xeb88"
+  },
+  {
+    "source": "firmware/phew/dns.py",
+    "target": "phew/dns.py",
+    "type": "backend",
+    "checksum": "0x1a09"
+  },
+  {
+    "source": "firmware/phew/logging.py",
+    "target": "phew/logging.py",
+    "type": "backend",
+    "checksum": "0x1d04"
+  },
+  {
+    "source": "firmware/phew/server.py",
+    "target": "phew/server.py",
+    "type": "backend",
+    "checksum": "0x1221"
+  },
+  {
+    "source": "firmware/phew/template.py",
+    "target": "phew/template.py",
+    "type": "backend",
+    "checksum": "0xc65e"
+  },
+  {
+    "source": "firmware/phew/__init__.py",
+    "target": "phew/__init__.py",
+    "type": "backend",
+    "checksum": "0xb699"
+  }
+]
