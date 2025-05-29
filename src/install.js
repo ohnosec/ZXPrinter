@@ -69,11 +69,16 @@ async function getfiles() {
 async function install() {
     const installmodal = bootstrap.Modal.getInstance(document.getElementById("installmodal"));
     const installbutton = document.getElementById("installbutton");
+    const cleancheckbox = document.getElementById("cleaninstall");
     installbutton.disabled = true;
     try {
         await command.executerepl(async (repl) => {
             const progresselement = document.getElementById("installprogress");
             updateprogress(progresselement, 0);
+
+            if (cleancheckbox.checked) {
+                await repl.removedir("", ["printout", "sd", "secrets.json"])
+            }
 
             const files = await getfiles();
 

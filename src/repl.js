@@ -4,17 +4,25 @@ import { sleep } from "./utils.js"
 const CTRLA = "\x01" // raw REPL
 const CTRLB = "\x02" // normal REPL
 const CTRLC = "\x03" // interrupt code
-const CTRLD = "\x04" // soft reset
-
+// in normal REPL soft reboot
+// in raw REPL
+// - by itself resets
+// - with command enters
+const CTRLD = "\x04"
 const ENTER = "\r"
 
-const INTERRUPT = `${CTRLB}${ENTER}${CTRLC}${CTRLC}`;
-const REPLENTER = "raw REPL; CTRL-B to exit\r\n>";
-const REPLPROMPT = ">";
-const REPLOK = "OK";
-const REPLSUBMIT = CTRLD;
-const REPLREBOOT = CTRLD;
-const REPLNULLCMD = `${ENTER}${REPLSUBMIT}`;
+const INTERRUPT = CTRLC;
+const REPL = CTRLB;
+const REBOOT = CTRLD;
+const STOP = `${REPL}${ENTER}${INTERRUPT}${INTERRUPT}`;
+
+const RAWSTART = CTRLA;
+const RAWSTARTED = "raw REPL; CTRL-B to exit\r\n>";
+const RAWPROMPT = ">";
+const RAWOK = "OK";
+const RAWSUBMIT = CTRLD;
+const RAWRESET = CTRLD;
+const RAWNULL = `${ENTER}${RAWSUBMIT}`;
 
 async function expect(data, expect, message=undefined) {
     serial.flush();
@@ -27,44 +35,50 @@ async function expect(data, expect, message=undefined) {
 }
 
 async function exec(command) {
-    await expect(command, REPLPROMPT, "REPL not responding");
+    await expect(command, RAWPROMPT, "REPL not responding");
 }
 
 async function enter() {
-    await serial.write(INTERRUPT);
+    await serial.write(STOP);
     await sleep(10);
-    await expect(CTRLA, REPLENTER, "Could not enter REPL");
+    await expect(RAWSTART, RAWSTARTED, "Could not enter REPL");
 }
 
 async function exit() {
-    await serial.write(CTRLB);
+    await serial.write(REPL);
     await sleep(10);
     serial.flush();
 }
 
 async function reboot() {
     await exit();
-    await serial.write(CTRLD);
+    await serial.write(REBOOT);
 }
 
 async function reset() {
-    await exec(REPLNULLCMD);
-    await exec(REPLREBOOT);
+    await exec(RAWNULL);
+    await exec(RAWRESET);
     await sleep(10);
     serial.flush();
 }
 
 async function execute(command) {
-    await exec(REPLNULLCMD);
+    await exec(RAWNULL);
     await serial.write(command);
-    await expect(REPLSUBMIT, REPLOK, "REPL not OK");
+    await expect(RAWSUBMIT, RAWOK, "REPL not OK");
 }
 
 async function execute_trim(command) {
-    const lines = command.split(/\r?\n|\r|\n/g)
-        .map(x => x.trim())
+    let indent = 0;
+    const lines = command.split(/\r?\n|\r|\n/g);
+    const firstline = lines.findIndex((l) => l.search(/\w/) >= 0);
+    if (firstline >= 0) {
+        indent = lines[firstline].search(/\w/);
+    }
+    const text = lines
+        .map(x => x.substring(indent).trimEnd())
         .join("\r");
-    await execute(lines);
+    await execute(text);
 }
 
 async function put(filename, data) {
@@ -121,11 +135,31 @@ async function put(filename, data) {
     `);
 }
 
+async function removedir(directory, keep=[]) {
+    const keeplist = keep.length === 0 ? "" : `'${keep.join("','")}'`
+    await execute_trim(`
+        import os
+        def rd(dn, kfn):
+            for fi in os.ilistdir(dn):
+                fn, ft = fi[0:2]
+                if fn in kfn:
+                    continue
+                fp = f'{dn}/{fn}'
+                if ft == 0x8000:
+                    os.remove(fp)
+                else:
+                    rd(fp, kfn)
+                    os.rmdir(fp)
+        rd('${directory}', (${keeplist}))
+    `);
+}
+
 export {
     enter,
     exit,
     reboot,
     reset,
     execute,
-    put
+    put,
+    removedir
 }

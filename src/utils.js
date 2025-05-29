@@ -29,6 +29,10 @@ class Logger {
     get contents() {
         return this.buffer;
     }
+
+    isempty() {
+        return this.buffer === "";
+    }
 }
 
 class Handler {
