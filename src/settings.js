@@ -1,8 +1,8 @@
-const SETTINGS_KEY = "appSettings";
+const SETTINGSKEY = "settings";
 
 function load() {
     try {
-        const settings = localStorage.getItem(SETTINGS_KEY);
+        const settings = localStorage.getItem(SETTINGSKEY);
         return settings ? JSON.parse(settings) : {};
     } catch (error) {
         console.error("Error loading settings", error);
@@ -12,7 +12,7 @@ function load() {
 
 function save(settings) {
     try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        localStorage.setItem(SETTINGSKEY, JSON.stringify(settings));
     } catch (error) {
         console.error("Error saving settings", error);
     }
@@ -39,7 +39,7 @@ function remove(key) {
 
 function clear() {
     try {
-        localStorage.removeItem(SETTINGS_KEY);
+        localStorage.removeItem(SETTINGSKEY);
     } catch (error) {
         console.error("Error clearing all settings", error);
     }

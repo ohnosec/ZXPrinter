@@ -6,7 +6,7 @@ import serialprinter
 from phew import server, logging
 import fileprinter
 import physicalprinter
-import secretsmanager
+import settings
 from system import hasnetwork
 
 def initialise(p, sd):
@@ -119,7 +119,7 @@ def setserialflow(hardware, software, delayms):
 
 def getnetwork():
     return {
-        "ssid": secretsmanager.getssid()
+        "ssid": settings.getssid()
     }
 
 async def sethostname(newhostname):
@@ -127,24 +127,24 @@ async def sethostname(newhostname):
 
     if newhostname != network.hostname():
         logging.info(f"Setting hostname {newhostname}")
-        secretsmanager.sethostname(newhostname)
-        secretsmanager.savesecrets()
+        settings.sethostname(newhostname)
+        settings.save()
         network.hostname(newhostname)
     return {}
 
 async def setnetwork(newssid, newpassword):
-    secretsmanager.setssid(newssid)
+    settings.setssid(newssid)
     if newpassword is not None:
-        secretsmanager.setpassword(newpassword)
-    secretsmanager.savesecrets()
+        settings.setpassword(newpassword)
+    settings.save()
     return {}
 
 def connect(newssid, newpassword):
     import network
 
     wlan = network.WLAN() # type: ignore
-    ssid = secretsmanager.getssid()
-    password = secretsmanager.getpassword()
+    ssid = settings.getssid()
+    password = settings.getpassword()
     if newssid is not None:
         ssid = newssid
     if newpassword is not None:

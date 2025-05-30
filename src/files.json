@@ -51,7 +51,7 @@
     "source": "files.json",
     "target": "files.json",
     "type": "web",
-    "checksum": "0x946c"
+    "checksum": "0x27af"
   },
   {
     "source": "font.min.js",
@@ -69,13 +69,13 @@
     "source": "index.html",
     "target": "index.html",
     "type": "web",
-    "checksum": "0x9276"
+    "checksum": "0x1233"
   },
   {
     "source": "install.js",
     "target": "install.js",
     "type": "web",
-    "checksum": "0x75fb"
+    "checksum": "0xaa2f"
   },
   {
     "source": "jsbmp.js",
@@ -93,7 +93,7 @@
     "source": "log.js",
     "target": "log.js",
     "type": "web",
-    "checksum": "0xa748"
+    "checksum": "0xd9d8"
   },
   {
     "source": "main.py",
@@ -117,25 +117,25 @@
     "source": "repl.js",
     "target": "repl.js",
     "type": "web",
-    "checksum": "0x8154"
+    "checksum": "0x4b0c"
   },
   {
     "source": "serial.js",
     "target": "serial.js",
     "type": "web",
-    "checksum": "0x7841"
+    "checksum": "0x2a3f"
   },
   {
     "source": "settings.js",
     "target": "settings.js",
     "type": "web",
-    "checksum": "0xa772"
+    "checksum": "0x049c"
   },
   {
     "source": "utils.js",
     "target": "utils.js",
     "type": "web",
-    "checksum": "0x36fd"
+    "checksum": "0xf151"
   },
   {
     "source": "websocket.js",
@@ -237,7 +237,7 @@
     "source": "firmware/init.py",
     "target": "init.py",
     "type": "backend",
-    "checksum": "0x875c"
+    "checksum": "0xe61f"
   },
   {
     "source": "firmware/ledprinter.py",
@@ -312,12 +312,6 @@
     "checksum": "0xc382"
   },
   {
-    "source": "firmware/secretsmanager.py",
-    "target": "secretsmanager.py",
-    "type": "backend",
-    "checksum": "0x6b68"
-  },
-  {
     "source": "firmware/serialprinter.py",
     "target": "serialprinter.py",
     "type": "backend",
@@ -333,7 +327,13 @@
     "source": "firmware/services.py",
     "target": "services.py",
     "type": "backend",
-    "checksum": "0xbb84"
+    "checksum": "0x4063"
+  },
+  {
+    "source": "firmware/settings.py",
+    "target": "settings.py",
+    "type": "backend",
+    "checksum": "0x588b"
   },
   {
     "source": "firmware/system.py",
@@ -345,7 +345,7 @@
     "source": "firmware/webserver.py",
     "target": "webserver.py",
     "type": "backend",
-    "checksum": "0x94f0"
+    "checksum": "0x3ae0"
   },
   {
     "source": "firmware/zxprinterdriver.py",

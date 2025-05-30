@@ -6,7 +6,7 @@ from phew import server, logging
 from phew.server import redirect, Response, FileResponse
 from phew.template import render_template
 import services
-import secretsmanager
+import settings
 import fileprinter
 
 class JsonResponse(Response):
@@ -41,7 +41,7 @@ def initialize(p):
                 if filename != "local.js":
                     addstaticroute(filename)
 
-    network.hostname(secretsmanager.gethostname())
+    network.hostname(settings.gethostname())
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
@@ -159,7 +159,7 @@ async def connect_to_wifi(ssid, password, timeout_seconds=15):
 async def start():
     server.create_task()
     try:
-        ipaddress = await connect_to_wifi(secretsmanager.getssid(), secretsmanager.getpassword())
+        ipaddress = await connect_to_wifi(settings.getssid(), settings.getpassword())
         if ipaddress:
             try:
                 ntptime.settime()

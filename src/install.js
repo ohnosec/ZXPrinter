@@ -77,7 +77,7 @@ async function install() {
             updateprogress(progresselement, 0);
 
             if (cleancheckbox.checked) {
-                await repl.removedir("", ["printout", "sd", "secrets.json"])
+                await repl.removedir("", ["printout", "sd", "settings.json"])
             }
 
             const files = await getfiles();

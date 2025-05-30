@@ -26,7 +26,7 @@ import fileprinter
 import physicalprinter
 import services
 import serialserver
-import secretsmanager
+import settings
 import sd
 import gc
 
@@ -40,7 +40,7 @@ webenabled = hasnetwork()
 
 sdmanager = sd.create()
 
-secretsmanager.initialize()
+settings.initialize()
 services.initialise(connectedpixel, sdmanager)
 fileprinter.initialise(sdmanager)
 if webenabled:
