@@ -50,7 +50,7 @@ function startrefresh() {
         const logtext = document.getElementById('logtext');
         logintervalid = setInterval(() => {
             const scrollpct = logtext.scrollTop / (logtext.scrollHeight - logtext.offsetHeight) * 100;
-            refreshlog(scrollpct == 100);
+            refreshlog(scrollpct === 100 || logtext.scrollHeight === logtext.offsetHeight);
         }, 500);
     }
 }

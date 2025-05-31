@@ -21,17 +21,19 @@ let lastcr = false;
 function log(type, message = "") {
     if (type != lastlogtype) {
         lastlogtype = type;
-        if (type == LogType.READ) {
-            logger.log("🡄");
-        } else if (type === LogType.WRITE) {
-            logger.log("🡆");
+        if (type == LogType.READ || type === LogType.WRITE) {
+            let logtext = type === LogType.READ ? "🡄" : "🡆";
+            if (lastcr) logtext = `\n${logtext}`;
+            logger.log(logtext);
+            lastcr = false;
         } else if (type === LogType.CONNECT || type === LogType.DISCONNECT) {
             let logtext = type === LogType.CONNECT ? "🡇" : "🡅";
-            if (!logger.isempty()) logtext = `\n${logtext}`;
+            if (!logger.isblankline()) logtext = `\n${logtext}`;
             logger.log(`${logtext}\n`);
             lastcr = false;
         }
     }
+    if (message === "") return;
     logger.log(message.replace(/[\S\s]/g, char => {
         let logtext = char;
         const iscr = char === "\r";

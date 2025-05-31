@@ -51,7 +51,7 @@
     "source": "files.json",
     "target": "files.json",
     "type": "web",
-    "checksum": "0x27af"
+    "checksum": "0xb831"
   },
   {
     "source": "font.min.js",
@@ -93,7 +93,7 @@
     "source": "log.js",
     "target": "log.js",
     "type": "web",
-    "checksum": "0xd9d8"
+    "checksum": "0x2ea7"
   },
   {
     "source": "main.py",
@@ -117,13 +117,13 @@
     "source": "repl.js",
     "target": "repl.js",
     "type": "web",
-    "checksum": "0x4b0c"
+    "checksum": "0x17f9"
   },
   {
     "source": "serial.js",
     "target": "serial.js",
     "type": "web",
-    "checksum": "0x2a3f"
+    "checksum": "0x90b6"
   },
   {
     "source": "settings.js",
@@ -135,7 +135,7 @@
     "source": "utils.js",
     "target": "utils.js",
     "type": "web",
-    "checksum": "0xf151"
+    "checksum": "0x29bb"
   },
   {
     "source": "websocket.js",

@@ -19,11 +19,14 @@ const loggerbufferlength = 32768;
 class Logger {
     constructor() {
         this.buffer = "";
+        this.blankline = true;
     }
 
     log(message) {
         this.buffer += message;
         this.buffer = this.buffer.slice(-loggerbufferlength);
+        const lastchar = message.slice(-1);
+        this.blankline = lastchar === "\n" || lastchar === "\r";
     }
 
     get contents() {
@@ -32,6 +35,10 @@ class Logger {
 
     isempty() {
         return this.buffer === "";
+    }
+
+    isblankline() {
+        return this.blankline;
     }
 }
 
