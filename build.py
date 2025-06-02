@@ -3,8 +3,8 @@ import json
 import re
 import fnmatch
 
-basepath = os.path.abspath(os.path.dirname(sys.argv[0])) # type: ignore
-basepath += "/src"
+scriptpath = os.path.abspath(os.path.dirname(sys.argv[0])) # type: ignore
+basepath = f"{scriptpath}/src"
 
 configfile = "files.json"
 definition = {
@@ -34,7 +34,7 @@ def minifyfont(fontfilename):
             minfile.write(f"const {shortname}=")
             minfile.write(hexstrings)
 
-# crc converted from here, reused in firmware sd card
+# crc functions converted from here... (also used in firmware sd card)
 # https://electronics.stackexchange.com/questions/321304/how-to-use-the-data-crc-of-sd-cards-in-spi-mode
 crc16table = [0]*256
 for byt in range(256):
@@ -45,18 +45,55 @@ for byt in range(256):
             crc ^= 0x1021
     crc16table[byt] = crc & 0xFFFF
 
-def sd_crc16_byte(crcval, byte):
-    return (crc16table[(byte ^ (crcval >> 8)) & 0xFF] ^ (crcval << 8)) & 0xFFFF;
+def crc16byte(crcval, byte):
+    return (crc16table[(byte ^ (crcval >> 8)) & 0xFF] ^ (crcval << 8)) & 0xFFFF
 
-def getcrc16(filename):
+def getcrc16(filename, istext):
     crcval = 0x0000
-    with open(f"{basepath}/{filename}", "rb") as filestream:
-        while True:
-            bytes = filestream.read(1)
-            if not bytes:
-                break
-            crcval = sd_crc16_byte(crcval, bytes[0])
+    if istext:
+        with open(f"{basepath}/{filename}", "r", encoding="utf-8") as f:
+            for line in f:
+                for char in line.rstrip("\r\n"):
+                    crcval = crc16byte(crcval, ord(char))
+    else:
+        with open(f"{basepath}/{filename}", "rb") as filestream:
+            while True:
+                bytes = filestream.read(1)
+                if not bytes:
+                    break
+                crcval = crc16byte(crcval, bytes[0])
     return crcval
+
+def getattributes():
+    textfiles = []
+    with open(f"{scriptpath}/.gitattributes", "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+
+            pattern = parts[0]
+            attributes = set(parts[1:])
+
+            if pattern == "*":
+                continue
+
+            if "text" in attributes or "text=auto" in attributes:
+                textfiles.append(pattern)
+            elif "binary" not in attributes:
+                textfiles.append(pattern)
+    return textfiles
+
+gitattributes = getattributes()
+
+def getchecksum(filename):
+    justfilename = os.path.basename(filename) # type: ignore
+    istext = any(a for a in gitattributes if fnmatch.fnmatch(justfilename, a))
+    return getcrc16(filename, istext)
 
 def findmatch(name, names):
     return next((n for n in names if fnmatch.fnmatch(name, n.replace("<", "").replace(">", ""))), None)
@@ -72,6 +109,7 @@ def buildconfig():
             if path.startswith("/"):
                 path = path[1:]
             allfiles.append(f"{path}{file}")
+    allfiles.sort()
 
     configpath = os.path.dirname(configfile) # type: ignore
     filenames = []
@@ -89,11 +127,12 @@ def buildconfig():
             if len(configpath)>0:
                 file = file[len(configpath)+1:]
             if len(file)>0:
+                checksum = getchecksum(file) if file != configfile else 0
                 filenames.append({
                     "source": source,
                     "target": target,
                     "type": type,
-                    "checksum": f"0x{getcrc16(file):04x}"
+                    "checksum": f"0x{checksum:04x}"
                     })
     with open(f"{basepath}/{configfile}", "w") as configstream:
         json.dump(filenames, configstream, indent=2) # type: ignore

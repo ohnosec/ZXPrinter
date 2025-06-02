@@ -3,6 +3,8 @@ import * as network from "./network.js"
 
 import { showerror, errordefs, ShowError } from "./utils.js"
 
+const DISTROFILENAME = "files.json";
+
 async function fetchfile(url) {
     const response = await fetch(url);
     if (!response.ok) {
@@ -57,34 +59,60 @@ function updateprogress(progresselement, percent) {
     progresselement.textContent = percenttext;
 }
 
-async function getfiles() {
-    const configfile = "files.json";
+async function movetoend(distro) {
+    if (distro === null) return distro;
+    const distrofile = distro.find(d => d.source === DISTROFILENAME);
+    const otherfiles = distro.filter(d => d.source !== DISTROFILENAME);
+    return [...otherfiles, distrofile];
+}
 
-    const configfetch = await fetchfile(configfile);
-    const config = await configfetch.json();
+async function getdistro() {
+    const distrofetch = await fetchfile(DISTROFILENAME);
+    const distro = await distrofetch.json();
+    return movetoend(distro);
+}
 
-    return config;
+async function getdistrorepl(repl) {
+    const distrojson = await repl.gettext(DISTROFILENAME);
+    const distro = JSON.parse(distrojson);
+    return movetoend(distro);
 }
 
 async function install() {
     const installmodal = bootstrap.Modal.getInstance(document.getElementById("installmodal"));
     const installbutton = document.getElementById("installbutton");
-    const cleancheckbox = document.getElementById("cleaninstall");
+    const isquick = document.getElementById("quickinstall").checked;
+    const isclean = document.getElementById("cleaninstall").checked;
     installbutton.disabled = true;
     try {
         await command.executerepl(async (repl) => {
             const progresselement = document.getElementById("installprogress");
             updateprogress(progresselement, 0);
 
-            if (cleancheckbox.checked) {
+            const distrofiles = await getdistro();
+            const installfiles = [...distrofiles];
+
+            if (isquick && !isclean) {
+                const existingfiles = await getdistrorepl(repl);
+                if (existingfiles !== null) {
+                    installfiles.length = 0;
+                    for (let i=0; i<distrofiles.length; i++) { // for...of blows up chrome!
+                        const distrofile = distrofiles[i];
+                        const existingfile = existingfiles.find((f) => f.source === distrofile.source);
+                        if (!existingfile || existingfile.checksum != distrofile.checksum || distrofile.source === DISTROFILENAME) {
+                            installfiles.push(distrofile);
+                        }
+                    }
+                }
+            }
+
+            if (isclean) {
                 await repl.removedir("", ["printout", "sd", "settings.json"])
             }
 
-            const files = await getfiles();
-
-            const todo = files.length;
+            const todo = installfiles.length;
             let done = 0;
-            await uploadfiles(repl, files, () => {
+            await uploadfiles(repl, installfiles, () => {
                 done += 1;
                 updateprogress(progresselement, Math.floor(done / todo * 100));
             });
@@ -103,5 +131,23 @@ async function install() {
         installbutton.disabled = false;
     }
 }
+
+function changequick() {
+    const isquick = document.getElementById("quickinstall").checked;
+    const clean = document.getElementById("cleaninstall");
+
+    clean.disabled = isquick;
+    if (isquick) {
+        clean.checked = false;
+    }
+}
+
+const installelement = document.getElementById("installmodal")
+installelement.addEventListener("show.bs.modal", () => {
+    const progresselement = document.getElementById("installprogress");
+    updateprogress(progresselement, 0);
+});
+
+document.getElementById("quickinstall").addEventListener("change", changequick);
 
 export { install, play }
