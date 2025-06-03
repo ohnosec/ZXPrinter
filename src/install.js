@@ -46,8 +46,7 @@ async function uploadfiles(repl, files, callback) {
 
             callback();
         }
-    }
-    catch(error) {
+    } catch(error) {
         console.log(`Failed to upload ${sourcefile} ${error}`);
         throw error;
     }
@@ -59,23 +58,16 @@ function updateprogress(progresselement, percent) {
     progresselement.textContent = percenttext;
 }
 
-async function movetoend(distro) {
-    if (distro === null) return distro;
-    const distrofile = distro.find(d => d.source === DISTROFILENAME);
-    const otherfiles = distro.filter(d => d.source !== DISTROFILENAME);
-    return [...otherfiles, distrofile];
-}
-
 async function getdistro() {
     const distrofetch = await fetchfile(DISTROFILENAME);
     const distro = await distrofetch.json();
-    return movetoend(distro);
+    return distro;
 }
 
 async function getdistrorepl(repl) {
     const distrojson = await repl.gettext(DISTROFILENAME);
     const distro = JSON.parse(distrojson);
-    return movetoend(distro);
+    return distro;
 }
 
 async function install() {
@@ -99,23 +91,32 @@ async function install() {
                     for (let i=0; i<distrofiles.length; i++) { // for...of blows up chrome!
                         const distrofile = distrofiles[i];
                         const existingfile = existingfiles.find((f) => f.source === distrofile.source);
-                        if (!existingfile || existingfile.checksum != distrofile.checksum || distrofile.source === DISTROFILENAME) {
+                        if (!existingfile
+                            || existingfile.checksum != distrofile.checksum
+                            || distrofile.source == DISTROFILENAME)
+                        {
                             installfiles.push(distrofile);
                         }
+                    }
+                    // only the distro file so don't install anything
+                    if (installfiles.length === 1) {
+                        installfiles.length = 0;
                     }
                 }
             }
 
-            if (isclean) {
-                await repl.removedir("", ["printout", "sd", "settings.json"])
-            }
+            if (installfiles.length > 0) {
+                if (isclean) {
+                    await repl.removedir("", ["printout", "sd", "settings.json"])
+                }
 
-            const todo = installfiles.length;
-            let done = 0;
-            await uploadfiles(repl, installfiles, () => {
-                done += 1;
-                updateprogress(progresselement, Math.floor(done / todo * 100));
-            });
+                const todo = installfiles.length+1;
+                let done = 0;
+                await uploadfiles(repl, installfiles, () => {
+                    done += 1;
+                    updateprogress(progresselement, Math.floor(done / todo * 100));
+                });
+            }
 
             updateprogress(progresselement, 100);
 

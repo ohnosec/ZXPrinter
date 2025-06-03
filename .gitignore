@@ -6,3 +6,6 @@ node_modules
 dist
 
 repo
+
+/src/files.json
+/src/font.min.js

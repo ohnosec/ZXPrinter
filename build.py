@@ -6,10 +6,10 @@ import fnmatch
 scriptpath = os.path.abspath(os.path.dirname(sys.argv[0])) # type: ignore
 basepath = f"{scriptpath}/src"
 
-configfile = "files.json"
+distrofile = "files.json"
 definition = {
-    "include": [configfile, "main.py", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py"],
-    "exclude": ["font.js", "firmware/test*.py"]
+    "include": ["main.py", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py"],
+    "exclude": [distrofile, "font.js", "firmware/test*.py"]
 }
 
 def minifyfont(fontfilename):
@@ -98,8 +98,8 @@ def getchecksum(filename):
 def findmatch(name, names):
     return next((n for n in names if fnmatch.fnmatch(name, n.replace("<", "").replace(">", ""))), None)
 
-def buildconfig():
-    allfiles = []
+def getfiles():
+    filepaths = []
     for (root, _, files) in os.walk(basepath):
         for file in files:
             path = root[len(basepath):]
@@ -108,12 +108,21 @@ def buildconfig():
                 path += "/"
             if path.startswith("/"):
                 path = path[1:]
-            allfiles.append(f"{path}{file}")
-    allfiles.sort()
+            filepaths.append(f"{path}{file}")
+    filepaths.sort()
+    return filepaths
 
-    configpath = os.path.dirname(configfile) # type: ignore
-    filenames = []
-    for file in allfiles:
+def getdistro(source, target, type, checksum):
+    return {
+        "source": source,
+        "target": target,
+        "type": type,
+        "checksum": f"0x{checksum:04x}"
+    }
+
+def builddistro():
+    distros = []
+    for file in getfiles():
         include = findmatch(file, definition["include"])
         exclude = findmatch(file, definition["exclude"])
         if include and not exclude:
@@ -124,18 +133,11 @@ def buildconfig():
             if targetmatch:
                 target = target[:targetmatch.start()]+target[targetmatch.end()-2:]
                 type = "backend"
-            if len(configpath)>0:
-                file = file[len(configpath)+1:]
             if len(file)>0:
-                checksum = getchecksum(file) if file != configfile else 0
-                filenames.append({
-                    "source": source,
-                    "target": target,
-                    "type": type,
-                    "checksum": f"0x{checksum:04x}"
-                    })
-    with open(f"{basepath}/{configfile}", "w") as configstream:
-        json.dump(filenames, configstream, indent=2) # type: ignore
+                distros.append(getdistro(source, target, type, getchecksum(file)))
+    distros.append(getdistro(distrofile, distrofile, "web", 0))
+    with open(f"{basepath}/{distrofile}", "w") as distrostream:
+        json.dump(distros, distrostream, indent=2) # type: ignore
 
 minifyfont("font.js")
-buildconfig()
+builddistro()
