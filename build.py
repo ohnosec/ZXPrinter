@@ -13,6 +13,8 @@ definition = {
 }
 
 def minifyfont(fontfilename):
+    print("Minify font")
+
     linelength = 128
 
     filepath = os.path.normpath(os.path.join(basepath, fontfilename)) # type: ignore
@@ -121,6 +123,8 @@ def getdistro(source, target, type, checksum):
     }
 
 def builddistro():
+    print(f"Build distro file '{distrofile}'")
+
     distros = []
     for file in getfiles():
         include = findmatch(file, definition["include"])
