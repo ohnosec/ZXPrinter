@@ -56,7 +56,8 @@ async function execute(command, params = [], timeout = 5000) {
         serial.flush();
         params = params.map(p => encodeURIComponent(p)).join(' ');
         const startTime = (new Date()).getTime();
-        await serial.write(`${command} ${params}\r`);
+        const fullcommand = `${command} ${params}`.trimEnd();
+        await serial.write(`${fullcommand}\r`);
         responsetext = await serial.read("\n", timeout);
         const responseMs = (new Date()).getTime() - startTime;
         console.log(`Command '${command}' took ${responseMs} ms`);
