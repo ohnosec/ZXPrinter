@@ -16,6 +16,12 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
-        }
+        },
+        {
+            "name": "Run powershell file",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "${file}"
+        },
     ]
 }
