@@ -103,8 +103,8 @@ async function connect() {
     }
     reader.releaseLock();
     writer.releaseLock();
-    await port.forget();
     await port.close();
+    await port.forget();
     flush();
     isconnected = false;
     await disconnecthandler.call();
