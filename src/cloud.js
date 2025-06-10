@@ -1,4 +1,4 @@
-import { hidedropdown, showerror, errordefs, toggledropdown } from "./utils.js"
+import { createnavdropdown, hidedropdown, showerror, errordefs, toggledropdown } from "./utils.js"
 import { isrunninglocal, getaddress, setaddress, fetchrequest, requests, ishttpallowed } from "./client.js"
 import * as event from "./event.js"
 import * as websocket from "./websocket.js"
@@ -24,24 +24,24 @@ websocket.disconnecthandler.add(async () => {
 });
 
 function cloudhide() {
-    hidedropdown('clouddropdown');
+    hidedropdown("clouddropdown");
 }
 
 async function cloudmenu() {
-    const testelement = document.getElementById('cloudtest');
+    const testelement = document.getElementById("cloudtest");
     if (!ishttpallowed()) {
         testelement.classList.add("d-none");
     } else {
         testelement.classList.remove("d-none");
     }
     cloudaddresschange();
-    toggledropdown('clouddropdown');
+    toggledropdown("clouddropdown");
 }
 
 async function cloudaddresschange() {
-    const cloudaddresselement = document.getElementById('cloudaddress');
-    const cloudtestbutton = document.getElementById('cloudtest');
-    const cloudopenbutton = document.getElementById('cloudopen');
+    const cloudaddresselement = document.getElementById("cloudaddress");
+    const cloudtestbutton = document.getElementById("cloudtest");
+    const cloudopenbutton = document.getElementById("cloudopen");
 
     const address = cloudaddresselement.value.trim();
     if (address=="") {
@@ -57,20 +57,20 @@ async function cloudaddresschange() {
 }
 
 async function cloudaddresspaste() {
-    const cloudaddresselement = document.getElementById('cloudaddress');
+    const cloudaddresselement = document.getElementById("cloudaddress");
     const address = await navigator.clipboard.readText();
     cloudaddresselement.value = address;
 }
 
 async function cloudopen() {
-    const cloudaddresselement = document.getElementById('cloudaddress');
+    const cloudaddresselement = document.getElementById("cloudaddress");
     const address = cloudaddresselement.value.trim();
-    window.open(`http://${address}`, '_blank');
+    window.open(`http://${address}`, "_blank");
     cloudhide();
 }
 
 async function cloudsave() {
-    const cloudaddresselement = document.getElementById('cloudaddress');
+    const cloudaddresselement = document.getElementById("cloudaddress");
     const address = cloudaddresselement.value.trim();
     setaddress(address);
     event.connect();
@@ -78,18 +78,18 @@ async function cloudsave() {
 }
 
 function cloudload() {
-    const cloudaddresselement = document.getElementById('cloudaddress');
+    const cloudaddresselement = document.getElementById("cloudaddress");
     const address = getaddress();
     cloudaddresselement.value = address;
 }
 
 async function cloudtest() {
-    const cloudaddresselement = document.getElementById('cloudaddress');
+    const cloudaddresselement = document.getElementById("cloudaddress");
 
-    const cloudtestbutton = document.getElementById('cloudtest');
-    const cloudtestspinner = document.getElementById('cloudtestspinner');
-    const cloudtestgood = document.getElementById('cloudtestgood');
-    const cloudtestbad = document.getElementById('cloudtestbad');
+    const cloudtestbutton = document.getElementById("cloudtest");
+    const cloudtestspinner = document.getElementById("cloudtestspinner");
+    const cloudtestgood = document.getElementById("cloudtestgood");
+    const cloudtestbad = document.getElementById("cloudtestbad");
     cloudtestbutton.disabled = true;
     cloudtestspinner.classList.remove("d-none");
     cloudtestgood.classList.add("d-none");
@@ -124,6 +124,9 @@ if (!isrunninglocal()) {
 }
 
 cloudload();
+
+const clouddropdown = document.getElementById("clouddropdown");
+createnavdropdown(clouddropdown);
 
 export {
     cloudmenu,

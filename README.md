@@ -22,7 +22,7 @@ To install the backend:
 - Connect a USB cable between the Pico ZX Printer and your PC
 - Open the [Pico ZX Printer web app](https://ohnosec.github.io/ZXPrinter) from a Chrome, Edge, or Opera web browser
 - Click on the USB cable at the top right &nbsp; <picture><img alt="Timex Sinclair logo" src="images/usbcable.svg" height="17"></picture>
-- Select the `Board CDC` port for the Pico and click `Connect`
+- Select the `Board CDC` or `Board in FS mode` port for the Pico and click `Connect`
 - Click on the USB cable at the top right again
 - Click the `Install` button
 - On the install dialog click the `Start` button

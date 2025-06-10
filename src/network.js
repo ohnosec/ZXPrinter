@@ -1,4 +1,4 @@
-import { sleep, hidedropdown, toggledropdown, hidedropdowns, showerror, errordefs } from "./utils.js"
+import { sleep, createnavdropdown, hidedropdown, toggledropdown, hidedropdowns, showerror, errordefs } from "./utils.js"
 import * as command from "./command.js"
 import * as serial from "./serial.js"
 import { ishttpallowed } from "./client.js"
@@ -276,6 +276,9 @@ const networkdropelement = document.getElementById("networknamedrop");
 networkdropelement.addEventListener("show.bs.dropdown", async () => {
     await networkscan();
 });
+
+const serialdropdown = document.getElementById("serialdropdown");
+createnavdropdown(serialdropdown);
 
 export {
     networkpopulate, networkaddresscopy, networktest, networksave,

@@ -65,6 +65,21 @@ function isdropdown(element) {
     return false;
 }
 
+function createnavdropdown(element) {
+    bootstrap.Dropdown.getOrCreateInstance(element, {
+        popperConfig: {
+            modifiers: [
+                {
+                    name: "offset",
+                    options: {
+                        offset: [100, 12],
+                    },
+                },
+            ],
+        },
+    });
+}
+
 function hidedropdown(dropdownbuttonname) {
     const dropdownelement = document.getElementById(dropdownbuttonname);
     bootstrap.Dropdown.getOrCreateInstance(dropdownelement).hide();
@@ -183,7 +198,7 @@ export {
     Mutex,
     Logger,
     Handler,
-    isdropdown, hidedropdown, hidedropdowns, toggledropdown,
+    isdropdown, hidedropdown, hidedropdowns, toggledropdown, createnavdropdown,
     setbusystate,
     showerror, errordefs, ShowError
 }

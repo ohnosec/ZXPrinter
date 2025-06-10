@@ -41,7 +41,7 @@
                     <img id="serialdownstate" class="connectstate" src="assets/lightning-red.svg" width="10px" height="10px">
                   </div>
                 </button>
-                <div class="dropdown-menu p-4" style="width: 307px; left: -160px;">
+                <div class="dropdown-menu p-4" style="width: max-content;">
                   <div class="mb-1">
                     <div class="d-inline me-1">
                       <button class="btn btn-primary" onclick="void app.serialdisconnect()">Disconnect</button>
@@ -125,8 +125,8 @@
                     <img id="clouddownstate" class="connectstate" src="assets/lightning-red.svg" width="10px" height="10px">
                   </div>
                 </button>
-                <div class="dropdown-menu p-4" style="width: 307px; left: -225px;">
-                  <div class="mb-4 row">
+                <div class="dropdown-menu p-4" style="width: max-content;">
+                  <div class="mb-4">
                     <label for="cloudaddress" class="form-label">Address</label>
                     <div class="input-group">
                       <input type="text" class="form-control" id="cloudaddress" onclick="this.select()" oninput="void app.cloudaddresschange()">
