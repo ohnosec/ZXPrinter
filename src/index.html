@@ -615,12 +615,12 @@
         </div>
       </div>
     </div>
-    <div class="modal fade" id="installmodal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade" id="installmodal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="installmodallabel">Install onto the ZX Printer</h1>
-            <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h1 class="modal-title fs-5" id="installmodallabel">Install to the ZX Printer</h1>
+            <button id="installdismissbutton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="progress" role="progressbar" aria-label="Install progress" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="height: 30px">
@@ -642,7 +642,7 @@
                 </label>
               </div>
             </span>
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button id="installclosebutton" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button id="installbutton" class="btn btn-danger" onclick="void app.install()">Start</button>
           </div>
         </div>

@@ -71,11 +71,21 @@ async function getdistrorepl(repl) {
 }
 
 async function install() {
+    const initialcursor = document.body.style.cursor;
+    document.body.style.cursor = "wait";
     const installmodal = bootstrap.Modal.getInstance(document.getElementById("installmodal"));
     const installbutton = document.getElementById("installbutton");
-    const isquick = document.getElementById("quickinstall").checked;
-    const isclean = document.getElementById("cleaninstall").checked;
+    const installclosebutton = document.getElementById("installclosebutton");
+    const installdismissbutton = document.getElementById("installdismissbutton");
+    const isquickcheckbox = document.getElementById("quickinstall");
+    const iscleancheckbox = document.getElementById("cleaninstall");
     installbutton.disabled = true;
+    installclosebutton.disabled = true;
+    installdismissbutton.disabled = true;
+    isquickcheckbox.disabled = true;
+    iscleancheckbox.disabled = true;
+    const isquick = isquickcheckbox.checked;
+    const isclean = iscleancheckbox.checked;
     try {
         await command.executerepl(async (repl) => {
             const progresselement = document.getElementById("installprogress");
@@ -130,6 +140,12 @@ async function install() {
         showerror(errordefs.failedinstall, undefined, error);
     } finally {
         installbutton.disabled = false;
+        installclosebutton.disabled = false;
+        installdismissbutton.disabled = false;
+        isquickcheckbox.disabled = false;
+        iscleancheckbox.disabled = false;
+        changequick();
+        document.body.style.cursor = initialcursor;
     }
 }
 
