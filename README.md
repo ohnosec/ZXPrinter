@@ -13,7 +13,7 @@ The Pico ZX Printer replaces the ZX Printer or TS2040 printer. It's an emulator 
 In association with [TimexSinclair.com](https://timexsinclair.com/) and in collaboration with the TS-Team.
 
 ## 🔧 Getting started
-The app is made up of two parts, the web app, and the backend that runs on the Pico ZX Printer board.
+The Pico ZX Printer is made up of two parts, the web app, and the backend that runs on the Pico ZX Printer board.
 
 ### To install or upgrade the backend
 
@@ -49,7 +49,7 @@ First download the appropriate MicroPython file depending on your version of the
 - [Pico 2W](https://micropython.org/resources/firmware/RPI_PICO2_W-20250415-v1.25.0.uf2)
 
 <details>
-<summary>The latest MicroPython download can be found on download page:</summary>
+<summary>The latest MicroPython files can be found on the downloads page:</summary>
 </p>
 
 - [Pico downloads](https://micropython.org/download/RPI_PICO/)
@@ -60,9 +60,9 @@ First download the appropriate MicroPython file depending on your version of the
 </p>
 
 Then on the Raspberry Pi Pico:
-- Push and hold the BOOTSEL button on the Pi Pico itself while connecting a USB cable to you computer
-- Release the button once your Pi Pico appears as a Mass Storage Device called RPI-RP2
-- Copy the UF2 file onto the RPI-RP2 volume
+1. Push and hold the BOOTSEL button on the Pi Pico while connecting a USB cable to your PC
+2. Release the button once your Pi Pico appears as a Mass Storage Device called RPI-RP2
+3. Copy the UF2 file onto the RPI-RP2 volume
 </details>
 
 ## 🔦 What does it do?
