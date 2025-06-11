@@ -89,8 +89,9 @@ Unlike other ZX printer alternatives back in the day, the Pico ZX Printer doesn'
 
 ### Limitations of the web app
 
-- Only modern browsers are supported. It has only really been tested on Chrome
-- Only Chrome, Edge, or Opera web browsers support USB
+- Only modern browsers are supported. It's only been properly tested on Chrome
+- Only designed to work on the desktop. Small screen devices have not been tested
+- Only Chrome, Edge, or Opera web browsers currently support USB
 - Github hosting only allows connection over USB
 - Self hosting on the Pico ZX Printer only allows connection over the network
 - Self hosting on your PC allows connection over both USB and network
