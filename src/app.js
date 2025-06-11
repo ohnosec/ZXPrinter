@@ -94,8 +94,4 @@ function sidebartoggle() {
     menu.ariaExpanded = menu.ariaExpanded !== "true";
 }
 
-async function test() {
-    // placeholder
-}
-
-export { sidebartoggle, showtooltip, test }
+export { sidebartoggle, showtooltip }

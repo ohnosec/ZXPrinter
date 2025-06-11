@@ -13,23 +13,6 @@ async function fetchfile(url) {
     return response;
 }
 
-async function play() {
-    try {
-        await command.executerepl(async (repl) => {
-            const mainpy = await fetchfile("/main.py");
-            const mainpytext = await mainpy.text();
-
-            await repl.execute(mainpytext);
-
-            const response = await serial.read("", 2000);
-
-            console.log(`Python script running: ${response}`);
-        });
-    } catch (error) {
-        showerror(errordefs.failedstart, undefined, error);
-    }
-}
-
 async function uploadfiles(repl, files, callback) {
     let sourcefile = "";
     try {
@@ -167,4 +150,4 @@ installelement.addEventListener("show.bs.modal", () => {
 
 document.getElementById("quickinstall").addEventListener("change", changequick);
 
-export { install, play }
+export { install }
