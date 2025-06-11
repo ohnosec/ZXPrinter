@@ -173,7 +173,7 @@ class ShowError extends Error {
 
 function showerror(errordef, message, error) {
     let toastmessage;
-    if(error instanceof ShowError) {
+    if (error instanceof ShowError) {
         toastmessage = error.message;
     } else {
         toastmessage = message ?? errordef.toast ?? errordef.message ?? "Unknown error";

@@ -138,9 +138,9 @@ async function readstring(until="\n", timeoutms=0) {
     let string = "";
     while(true) {
         const char = await readchar(timeoutms);
-        if(char == undefined) return string;
+        if (char == undefined) return string;
         string += char;
-        if(until!="" && string.endsWith(until)) return string;
+        if (until!="" && string.endsWith(until)) return string;
     }
 }
 

@@ -28,12 +28,6 @@ function cloudhide() {
 }
 
 async function cloudmenu() {
-    const testelement = document.getElementById("cloudtest");
-    if (!ishttpallowed()) {
-        testelement.classList.add("d-none");
-    } else {
-        testelement.classList.remove("d-none");
-    }
     cloudaddresschange();
     toggledropdown("clouddropdown");
 }
@@ -51,9 +45,6 @@ async function cloudaddresschange() {
         cloudtestbutton.disabled = false;
         cloudopenbutton.disabled = false;
     }
-    if (!ishttpallowed()) {
-        cloudtestbutton.disabled = true;
-    }
 }
 
 async function cloudaddresspaste() {
@@ -63,8 +54,8 @@ async function cloudaddresspaste() {
 }
 
 async function cloudopen() {
-    const cloudaddresselement = document.getElementById("cloudaddress");
-    const address = cloudaddresselement.value.trim();
+    const addresselement = document.getElementById("cloudaddress");
+    const address = addresselement.value.trim();
     window.open(`http://${address}`, "_blank");
     cloudhide();
 }
@@ -119,7 +110,7 @@ async function cloudtest() {
     cloudtestbutton.disabled = false;
 }
 
-if (!isrunninglocal()) {
+if (!isrunninglocal() && ishttpallowed()) {
     document.getElementById("clouddropdown").style.display = "block";
 }
 

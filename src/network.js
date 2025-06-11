@@ -25,18 +25,19 @@ async function getstatus() {
 function networkupdate(status) {
     const networkaddresselement = document.getElementById("networkaddress");
     const networkaddresscopyelement = document.getElementById("networkaddresscopy");
+    const networkopenelement = document.getElementById("networkopen");
 
     const networkstateonelement = document.getElementById("networkstateon");
     const networkstateoffelement = document.getElementById("networkstateoff");
 
-    if(status.connected) {
+    if (status.connected) {
         networkstateonelement.classList.add("active");
         networkstateoffelement.classList.remove("active");
     } else {
         networkstateonelement.classList.remove("active");
         networkstateoffelement.classList.add("active");
     }
-    if(status.ip) {
+    if (status.ip) {
         networkaddresselement.value = status.ip;
         networkaddresselement.disabled = false;
         networkaddresscopyelement.disabled = false;
@@ -46,6 +47,7 @@ function networkupdate(status) {
         networkaddresselement.disabled = true;
         networkaddresscopyelement.disabled = true;
     }
+    networkopenelement.disabled = !(status.connected && status.ip)
 }
 
 function adddropdownitem(list, text) {
@@ -55,8 +57,16 @@ function adddropdownitem(list, text) {
     list.appendChild(listitem);
 }
 
+function networkopen() {
+    const addresselement = document.getElementById("networkaddress");
+    const address = addresselement.value.trim();
+    window.open(`http://${address}`, "_blank");
+    serialhide();
+}
+
 async function networkscan() {
     const networklistelement = document.getElementById("networknamelist");
+    const networknameelement = document.getElementById("networkname");
 
     const status = await command.execute("status", []);
     networkupdate(status);
@@ -189,7 +199,7 @@ async function serialdisconnect() {
 }
 
 async function serialconnect() {
-    if(serial.isconnected) {
+    if (serial.isconnected) {
         const useserialopt = document.getElementById("useserialopt");
         const networksettings = document.getElementById("networksettings");
         const hasnetwork = await getnetwork();
@@ -281,6 +291,6 @@ const serialdropdown = document.getElementById("serialdropdown");
 createnavdropdown(serialdropdown);
 
 export {
-    networkpopulate, networkaddresscopy, networktest, networksave,
+    networkpopulate, networkaddresscopy, networktest, networksave, networkopen,
     serialconnect, serialdisconnect, serialreset, serialrefreshstate
 }
