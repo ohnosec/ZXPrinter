@@ -165,11 +165,11 @@ async def start_server():
                         await serialwrite(response)
                         processing_time = time.ticks_ms() - command_start_time
                         logging.info(f"$ {command} [{processing_time}ms]")
-                    except Exception as e:
-                        logging.error(f"$ {command} failed: {e}")
-                        await serialwrite(command_error("Command failed", str(e)))
+                    except Exception as ex:
+                        logging.error(f"$ {command} failed: {ex}")
+                        await serialwrite(command_error("Command failed", str(ex)))
                 else:
                     await serialwrite(command_error("Unknown command"))
             gc.collect()
-        except Exception as e:
-            logging.error(f"$ Command read failed: {e}")
+        except Exception as ex:
+            logging.error(f"$ Command read failed: {ex}")

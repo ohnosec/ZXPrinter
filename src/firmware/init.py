@@ -17,6 +17,9 @@ capturepixel = pixel.create(pixeldriver.Pixel.RED)
 connectedpixel.flash(500, 500, retrigger=True)
 
 import asyncio
+import sys
+import io
+import gc
 from system import hasnetwork
 from phew import logging
 from zxprinterdriver import RowServerAsync
@@ -28,13 +31,19 @@ import services
 import serialserver
 import settings
 import sd
-import gc
 
 if DEBUG:
     logging.enable_logging_types(logging.LOG_ALL)
     logging.logger = print
 else:
     logging.logger = logging.rotatefile_logger
+
+def exceptionhandler(_, context):
+    ex = context["exception"]
+    exfile = io.StringIO()
+    sys.print_exception(ex, exfile) # type: ignore
+    exmessage = exfile.getvalue().strip() # type: ignore
+    logging.error(f"Exception: {ex}\n{exmessage}")
 
 webenabled = hasnetwork()
 
@@ -51,6 +60,7 @@ serialserver.initialize()
 print("Starting...")
 
 eventloop = asyncio.get_event_loop()
+eventloop.set_exception_handler(exceptionhandler)
 
 printserver = ProducerConsumer(RowServerAsync(PRTTIMEOUT))
 eventloop.create_task(printserver.getproducer())
