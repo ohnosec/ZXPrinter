@@ -1,6 +1,7 @@
 import { datauri } from "./datauri.js"
 import { bmp_mono } from "./jsbmp.js"
 import { execrequest, requests, fetchcancel } from "./client.js"
+import { addtooltip, updatetooltip } from "./utils.js"
 import { eventhandler } from "./event.js"
 import * as serial from "./serial.js"
 import * as command from "./command.js"
@@ -140,7 +141,7 @@ function putimage(name, imgsrc) {
         const prt = document.getElementById("prttemplate").cloneNode(true);
         prt.id = prtid;
         prt.removeAttribute('hidden');
-        prt.classList.add("prt")
+        prt.classList.add("prt");
 
         img = prt.getElementsByClassName("prtimg")[0];
         img.id = imgid;
@@ -205,6 +206,8 @@ function putimage(name, imgsrc) {
         }
 
         document.getElementById("prtdoc").appendChild(prt);
+
+        addtooltip([prt]);
     }
     const prt = document.getElementById(prtid);
     const txt = prt.getElementsByClassName("prttxt")[0];
@@ -354,6 +357,8 @@ async function renderall() {
         }
     } catch(error) {
         console.error('Error:', error);
+    } finally {
+        updatetooltip();
     }
 }
 

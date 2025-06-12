@@ -576,20 +576,20 @@
               <div class="row justify-content-between collapse prtcollapse">
                 <div class="col-1" style="height: 31px;top: -3px;position: relative;">
                   <div class="prttxtimgcheck form-check mb-0">
-                    <input class="form-check-input shadow-none border border-1 border-secondary custom prtcheck" type="checkbox" onchange="void app.selectprintout()" role="button" style="width: 30px;height: 30px;">
+                    <input class="form-check-input shadow-none border border-1 border-secondary custom prtcheck" type="checkbox" onchange="void app.selectprintout()" role="button" style="width: 30px;height: 30px;" data-bs-toggle="tooltip" data-bs-title="Select">
                   </div>
                 </div>
                 <div class="col-11 text-end">
-                  <div class="prttxtimgbtn btn-group me-1" role="group">
+                  <div class="prttxtimgbtn btn-group me-1" role="group" data-bs-toggle="tooltip" data-bs-title="Image/Text">
                     <input type="radio" class="btn-check" name="prttxtimgbtn" id="prtimgbtn" autocomplete="off" value="image" checked>
                     <label class="btn btn-outline-secondary btn-sm" for="prtimgbtn"><i class="bi bi-file-image"></i></label>
                     <input type="radio" class="btn-check" name="prttxtimgbtn" id="prttxtbtn" autocomplete="off" value="text">
                     <label class="btn btn-outline-secondary btn-sm" for="prttxtbtn"><i class="bi bi-file-text"></i></label>
                   </div>
-                  <button class="prtdownbtn btn btn-secondary btn-sm me-1">
+                  <button class="prtdownbtn btn btn-secondary btn-sm me-1" data-bs-toggle="tooltip" data-bs-title="Download">
                     <i class="bi bi-box-arrow-down"></i>
                   </button>
-                  <button class="prtprintbtn btn btn-secondary btn-sm">
+                  <button class="prtprintbtn btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-title="Print">
                     <i class="bi bi-printer"></i>
                   </button>
                 </div>

@@ -5,7 +5,7 @@ export * from "./install.js"
 export * from "./cloud.js"
 export * from "./printer.js"
 
-import { isdropdown, hidedropdowns } from "./utils.js"
+import { isdropdown, hidedropdowns, addtooltip, updatetooltip } from "./utils.js"
 import * as settings from "./settings.js"
 
 const TOOLTIPSTATENAME = "showtooltip";
@@ -23,43 +23,16 @@ document.body.addEventListener("click", e => {
     }
 });
 
-const tooltipelements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-
-for(const tooltipelement of tooltipelements) {
-    const tooltip = bootstrap.Tooltip.getOrCreateInstance(tooltipelement, {
-        placement: "top",
-        trigger: "hover",
-        //delay: { "show":0, "hide":150 }
-    });
-    const title = tooltipelement.dataset.bsTitle;
-    tooltipelement.addEventListener("hidden.bs.tooltip", () => {
-        tooltip.setContent({ ".tooltip-inner": title });
-    });
-}
-
-function updatetooltip(enabled) {
-    const tooltipforeach = fn => {
-        for(const tooltipelement of tooltipelements) {
-            const tooltip = bootstrap.Tooltip.getOrCreateInstance(tooltipelement);
-            fn(tooltip);
-        }
-    };
-    if (enabled) {
-        tooltipforeach(tooltip => tooltip.enable());
-    } else {
-        tooltipforeach(tooltip => tooltip.disable());
-    }
-}
-
-function showtooltip(checkbox) {
-    updatetooltip(checkbox.checked);
-    settings.set(TOOLTIPSTATENAME, checkbox.checked);
-}
-
 const tooltipstate = settings.get(TOOLTIPSTATENAME, true);
 const tooltipenable = document.getElementById("tooltipenable");
 tooltipenable.checked = tooltipstate;
-updatetooltip(tooltipstate);
+addtooltip();
+updatetooltip();
+
+function showtooltip(checkbox) {
+    updatetooltip();
+    settings.set(TOOLTIPSTATENAME, checkbox.checked);
+}
 
 function setupmenu(element) {
     const menus = element.querySelectorAll(".menu");

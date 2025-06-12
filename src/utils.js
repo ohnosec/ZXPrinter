@@ -107,6 +107,41 @@ function toggledropdown(dropdownbuttonname) {
     }
 }
 
+function addtooltip(tooltipelements = null) {
+    if (!tooltipelements) {
+        tooltipelements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    }
+    for(const tooltipelement of tooltipelements) {
+        const tooltip = bootstrap.Tooltip.getOrCreateInstance(tooltipelement, {
+            placement: "top",
+            trigger: "hover",
+            //delay: { "show":0, "hide":150 }
+        });
+        const title = tooltipelement.dataset.bsTitle;
+        tooltipelement.addEventListener("hidden.bs.tooltip", () => {
+            tooltip.setContent({ ".tooltip-inner": title });
+        });
+    }
+}
+
+function updatetooltip() {
+    const enabledelement = document.getElementById("tooltipenable");
+    const enabled = enabledelement.checked;
+
+    const tooltipelements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipforeach = fn => {
+        for(const tooltipelement of tooltipelements) {
+            const tooltip = bootstrap.Tooltip.getOrCreateInstance(tooltipelement);
+            fn(tooltip);
+        }
+    };
+    if (enabled) {
+        tooltipforeach(tooltip => tooltip.enable());
+    } else {
+        tooltipforeach(tooltip => tooltip.disable());
+    }
+}
+
 let busycount = 0;
 function setbusystate(isbusy) {
     const spinner = document.getElementById("busyspinner");
@@ -199,6 +234,7 @@ export {
     Logger,
     Handler,
     isdropdown, hidedropdown, hidedropdowns, toggledropdown, createnavdropdown,
+    addtooltip, updatetooltip,
     setbusystate,
     showerror, errordefs, ShowError
 }
