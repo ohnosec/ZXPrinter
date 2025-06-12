@@ -30,13 +30,11 @@ window.console.warn = newconsolelog('Warn', window.console, window.console.warn)
 window.console.error = newconsolelog('Error', window.console, window.console.error);
 
 function updatelog(enabled) {
-    const logs = document.getElementById('logmenu');
+    const logmenu = document.getElementById('logmenu');
     if (enabled) {
-        logs.classList.remove("d-none");
+        logmenu.classList.remove("d-none");
     } else {
-        const logpage = document.getElementById("log");
-        logpage.hidden = true;
-        logs.classList.add("d-none");
+        logmenu.classList.add("d-none");
     }
 }
 
