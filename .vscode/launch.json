@@ -2,6 +2,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "auto",
+            "type": "auto-debug",
+            "request": "launch",
+            "map": {
+                "*.py": "Run python file",
+                "*.js": "Run javascript file",
+                "*.ps1": "Run powershell file"
+            }
+        },
+        {
             "name": "Run python file",
             "type": "debugpy",
             "request": "launch",
@@ -22,6 +32,6 @@
             "type": "PowerShell",
             "request": "launch",
             "script": "${file}"
-        },
+        }
     ]
 }
