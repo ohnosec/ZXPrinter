@@ -36,7 +36,8 @@ def initialize(p):
     with open("/files.json") as fp:
         files = json.load(fp)
         for file in files:
-            if file["type"] == "web":
+            filetype = file["type"]
+            if filetype == "web" or filetype == "config":
                 filename = file["target"]
                 if filename != "local.js":
                     addstaticroute(filename)

@@ -215,6 +215,17 @@ async function removedir(directory, keep=[]) {
     `);
 }
 
+async function hasnetwork() {
+    const response = await executelines(`
+        try:
+            import network
+            print(hasattr(network, "WLAN"))
+        except:
+            print(False)
+    `);
+    return response.trim() === "True";
+}
+
 export {
     enter,
     exit,
@@ -224,5 +235,6 @@ export {
     put,
     getbinary,
     gettext,
-    removedir
+    removedir,
+    hasnetwork
 }

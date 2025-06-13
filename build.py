@@ -8,7 +8,7 @@ basepath = f"{scriptpath}/src"
 
 distrofile = "files.json"
 definition = {
-    "include": ["main.py", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py"],
+    "include": ["<>main.py", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py"],
     "exclude": [distrofile, "font.js", "firmware/test*.py"]
 }
 
@@ -139,7 +139,7 @@ def builddistro():
                 type = "backend"
             if len(file)>0:
                 distros.append(getdistro(source, target, type, getchecksum(file)))
-    distros.append(getdistro(distrofile, distrofile, "web", 0))
+    distros.append(getdistro(distrofile, distrofile, "config", 0))
     with open(f"{basepath}/{distrofile}", "w") as distrostream:
         json.dump(distros, distrostream, indent=2) # type: ignore
 

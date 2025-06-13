@@ -74,11 +74,14 @@ async function install() {
             const progresselement = document.getElementById("installprogress");
             updateprogress(progresselement, 0);
 
-            const distrofiles = await getdistro();
+            const hasnetwork = await repl.hasnetwork();
+            const webfilter = (d) => d.filter(d => hasnetwork || d.type !== "web");
+
+            const distrofiles = webfilter(await getdistro());
             const installfiles = [...distrofiles];
 
             if (isquick && !isclean) {
-                const existingfiles = await getdistrorepl(repl);
+                const existingfiles = webfilter(await getdistrorepl(repl));
                 if (existingfiles !== null) {
                     installfiles.length = 0;
                     for (let i=0; i<distrofiles.length; i++) { // for...of blows up chrome!
