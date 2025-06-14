@@ -7,7 +7,7 @@ async function setprinterenable(enabled) {
         for(const galleryprint of galleryprints) {
             galleryprint.classList.remove("disabled");
         }
-        printercollapse.show();
+        printersettings.show();
         changeprintertarget();
     } else {
         for(const galleryprint of galleryprints) {
@@ -15,7 +15,7 @@ async function setprinterenable(enabled) {
         }
         document.getElementById("galtgtpc").checked = true;
         changegallerytarget();
-        printercollapse.hide();
+        printersettings.hide();
         await execrequest(requests.setprttarget, {target:"off"});
     }
 }
@@ -47,10 +47,10 @@ async function changedotdensity() {
 async function changeprintertarget() {
     const target = document.querySelector("#printertarget input[type='radio']:checked").value;
 
-    if (target.toLowerCase() == 'serial') {
-        serialcollapse.show();
+    if (target.toLowerCase() == "serial") {
+        serialsettings.show();
     } else {
-        serialcollapse.hide();
+        serialsettings.hide();
     }
 
     await execrequest(requests.setprttarget, {target:target})
@@ -104,9 +104,9 @@ async function changeserial() {
 
 const prtbaud = document.getElementById("printerbaud");
 const prtbauddrop = document.getElementById("printerbauddrop");
-prtbauddrop.addEventListener('hide.bs.dropdown', async event => {
+prtbauddrop.addEventListener("hide.bs.dropdown", async event => {
     const target = event.clickEvent.target;
-    if (target.classList.contains('dropdown-item')) {
+    if (target.classList.contains("dropdown-item")) {
         const value = target.innerText;
         prtbaud.value = value;
         prtbaud.classList.remove("is-invalid");
@@ -114,14 +114,40 @@ prtbauddrop.addEventListener('hide.bs.dropdown', async event => {
     }
 })
 
-const printercollapseelement = document.getElementById("printersettings");
-const printercollapse = bootstrap.Collapse.getOrCreateInstance(printercollapseelement, {
+const printersettingselement = document.getElementById("printersettings");
+const printersettings = bootstrap.Collapse.getOrCreateInstance(printersettingselement, {
+    toggle: false
+});
+
+const serialsettingseelement = document.getElementById("serialsettings");
+const serialsettings = bootstrap.Collapse.getOrCreateInstance(serialsettingseelement, {
+    toggle: false
+});
+
+const serialoptionseelement = document.getElementById("serialoptions");
+const serialoptions = bootstrap.Collapse.getOrCreateInstance(serialoptionseelement, {
+    toggle: false
+});
+
+const printoptionselement = document.getElementById("printoptions");
+const printoptions = bootstrap.Collapse.getOrCreateInstance(printoptionselement, {
   toggle: false
 });
 
-const serialcollapseelement = document.getElementById("serialsettings");
-const serialcollapse = bootstrap.Collapse.getOrCreateInstance(serialcollapseelement, {
-  toggle: false
+const printeropt = document.getElementById("printersettings");
+printeropt.addEventListener("show.bs.collapse", async (event) => {
+    switch(event.target.id) {
+        case "printersettings":
+            printoptions.hide();
+            serialoptions.hide();
+            break;
+        case "serialoptions":
+            printoptions.hide();
+            break;
+        case "printoptions":
+            serialoptions.hide();
+            break;
+    }
 });
 
 document.getElementById("printereol").addEventListener("change", changeendofline);

@@ -295,24 +295,24 @@
     transform: rotate(180deg);
 }
 
-.galleryoptcollapse {
+.menuoptcollapse {
     position: relative;
 }
 
-.galleryoptcollapse span {
+.menuoptcollapse span {
     position: absolute;
     top: -13px;
     background: rgba(71, 70, 70);
     padding-right: 10px;
 }
 
-#galleryoptcollapse i {
+.menuoptcollapsebutton i {
     transition: transform 0.3s;
     display: inline-block;
     padding-top: 0px !important;
- }
+}
 
-#galleryoptcollapse[aria-expanded="true"] i {
+.menuoptcollapsebutton[aria-expanded="true"] i {
     transform: rotate(180deg);
 }
 

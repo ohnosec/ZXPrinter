@@ -251,11 +251,11 @@
                   <label class="form-check-label" for="gallerycapture">Capture enable</label>
                 </div>
               </div>
-              <div class="galleryoptcollapse pb-2 pe-3">
+              <div class="menuoptcollapse pb-2 pe-3">
                 <hr/>
                 <span>
-                  <button id="galleryoptcollapse" class="nav-link" data-bs-toggle="collapse" data-bs-target="#galleryoptcollapsecontent" aria-expanded="false" aria-controls="galleryoptcollapsecontent">
-                    Options
+                  <button class="menuoptcollapsebutton nav-link" data-bs-toggle="collapse" data-bs-target="#galleryoptcollapsecontent" aria-expanded="false" aria-controls="galleryoptcollapsecontent">
+                    Gallery preferences
                     <i class="bi bi-caret-down-fill pt-2" style="font-size: small"></i>
                   </button>
                 </span>
@@ -345,54 +345,17 @@
             <div class="ps-2 pt-1">
               <div class="mb-3">
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="printerenable" onclick="app.setprinterenable(this)" >
+                  <input class="form-check-input" type="checkbox" id="printerenable" onclick="app.setprinterenable(this)">
                   <label class="form-check-label" for="printerenable">Printer enable</label>
                 </div>
               </div>
               <div id="printersettings" class="collapse">
-                <div class="mb-3">
-                  <label for="printereol" class="form-label">End of line</label>
-                  <div>
-                    <div id="printereol" class="btn-group" role="group">
-                      <input type="radio" class="btn-check" name="printereol" id="prteolcr" value="CR" autocomplete="off">
-                      <label class="btn btn-secondary" for="prteolcr">CR</label>
-
-                      <input type="radio" class="btn-check" name="printereol" id="prteolcrlf" value="CRLF" autocomplete="off" checked>
-                      <label class="btn btn-secondary" for="prteolcrlf">CR and LF</label>
-                    </div>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="printereop" class="form-label">End of print</label>
-                  <div>
-                    <div id="printereop" class="btn-group" role="group">
-                      <input type="radio" class="btn-check" name="printereop" id="prteopnl" value="NL" autocomplete="off" checked>
-                      <label class="btn btn-secondary" for="prteopnl">New Line</label>
-
-                      <input type="radio" class="btn-check" name="printereop" id="prteopff" value="FF" autocomplete="off">
-                      <label class="btn btn-secondary" for="prteopff">Form Feed</label>
-                    </div>
-                  </div>
-                </div>
-                <div class="mb-2">
-                  <label for="leftmargin" class="form-label">Left margin</label>
-                  <div>
-                    <input id="leftmargin" class="w-75" type="range" min="1" max="30" value="0">
-                  </div>
-                </div>
-                <div class="mb-2">
-                  <label for="dotdensity" class="form-label">Dot density</label>
-                  <div>
-                    <input id="dotdensity" class="w-75" type="range" min="0" max="1" value="0">
-                  </div>
-                </div>
                 <div class="mb-4">
                   <label for="printertarget" class="form-label">Port</label>
                   <div>
                     <div id="printertarget" class="btn-group" role="group">
                       <input type="radio" class="btn-check" name="printertarget" id="prttgtparallel" value="parallel" autocomplete="off" checked>
                       <label class="btn btn-secondary" for="prttgtparallel">Parallel</label>
-
                       <input type="radio" class="btn-check" name="printertarget" id="prttgtserial" value="serial" autocomplete="off">
                       <label class="btn btn-secondary" for="prttgtserial">Serial</label>
                     </div>
@@ -402,83 +365,136 @@
                   <div class="mb-3 pe-5" id="printerbaud2">
                     <label for="printerbaud" class="form-label">Baud rate</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="printerbaud" placeholder="Baud rate" value="19200" oninput="this.value=this.value.replace(/(?![0-9])./gmi,'')">
-                        <button class="btn border dropdown-toggle" id="printerbauddrop" data-bs-toggle="dropdown" aria-expanded="false"></button>
-                        <ul class="dropdown-menu dropdown-menu-end" id="printerbaudlist">
-                          <li><button class="dropdown-item">300</button></li>
-                          <li><button class="dropdown-item">600</button></li>
-                          <li><button class="dropdown-item">1200</button></li>
-                          <li><button class="dropdown-item">2400</button></li>
-                          <li><button class="dropdown-item">4800</button></li>
-                          <li><button class="dropdown-item">9600</button></li>
-                          <li><button class="dropdown-item">19220</button></li>
-                          <li><button class="dropdown-item">38400</button></li>
-                          <li><button class="dropdown-item">57600</button></li>
-                          <li><button class="dropdown-item">115200</button></li>
-                        </ul>
+                      <input type="text" class="form-control" id="printerbaud" placeholder="Baud rate" value="19200" oninput="this.value=this.value.replace(/(?![0-9])./gmi,'')">
+                      <button class="btn border dropdown-toggle" id="printerbauddrop" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                      <ul class="dropdown-menu dropdown-menu-end" id="printerbaudlist">
+                        <li><button class="dropdown-item">300</button></li>
+                        <li><button class="dropdown-item">600</button></li>
+                        <li><button class="dropdown-item">1200</button></li>
+                        <li><button class="dropdown-item">2400</button></li>
+                        <li><button class="dropdown-item">4800</button></li>
+                        <li><button class="dropdown-item">9600</button></li>
+                        <li><button class="dropdown-item">19220</button></li>
+                        <li><button class="dropdown-item">38400</button></li>
+                        <li><button class="dropdown-item">57600</button></li>
+                        <li><button class="dropdown-item">115200</button></li>
+                      </ul>
                     </div>
                   </div>
-                  <div class="mb-3">
-                    <label for="printerbits" class="form-label">Data bits</label>
-                    <div>
-                      <div id="printerbits" class="btn-group" role="group">
-                        <input type="radio" class="btn-check" name="printerbits" id="prtbit8" value="8" autocomplete="off" checked>
-                        <label class="btn btn-secondary" for="prtbit8">8</label>
-
-                        <input type="radio" class="btn-check" name="printerbits" id="prtbit7" value="7" autocomplete="off">
-                        <label class="btn btn-secondary" for="prtbit7">7</label>
+                  <div class="pt-2">
+                    <div class="menuoptcollapse pb-2 pe-3">
+                      <hr />
+                      <span>
+                        <button class="menuoptcollapsebutton nav-link" data-bs-toggle="collapse" data-bs-target="#serialoptions" aria-expanded="false" aria-controls="serialoptions">
+                          Serial settings
+                          <i class="bi bi-caret-down-fill pt-2" style="font-size: small"></i>
+                        </button>
+                      </span>
+                    </div>
+                    <div class="collapse" id="serialoptions">
+                      <div class="mb-3">
+                        <label for="printerbits" class="form-label">Data bits</label>
+                        <div>
+                          <div id="printerbits" class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="printerbits" id="prtbit8" value="8" autocomplete="off" checked>
+                            <label class="btn btn-secondary" for="prtbit8">8</label>
+                            <input type="radio" class="btn-check" name="printerbits" id="prtbit7" value="7" autocomplete="off">
+                            <label class="btn btn-secondary" for="prtbit7">7</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="printerparity" class="form-label">Parity</label>
+                        <div>
+                          <div id="printerparity" class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="printerparity" id="prtparitynone" value="none" autocomplete="off" checked>
+                            <label class="btn btn-secondary" for="prtparitynone">None</label>
+                            <input type="radio" class="btn-check" name="printerparity" id="prtparityeven" value="even" autocomplete="off">
+                            <label class="btn btn-secondary" for="prtparityeven">Even</label>
+                            <input type="radio" class="btn-check" name="printerparity" id="prtparityodd" value="odd" autocomplete="off">
+                            <label class="btn btn-secondary" for="prtparityodd">Odd</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="printerstop" class="form-label">Stop bits</label>
+                        <div>
+                          <div id="printerstop" class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="printerstop" id="prtstop1" value="1" autocomplete="off" checked>
+                            <label class="btn btn-secondary" for="prtstop1">1</label>
+                            <input type="radio" class="btn-check" name="printerstop" id="prtstop2" value="2" autocomplete="off">
+                            <label class="btn btn-secondary" for="prtstop2">2</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="printerflow" class="form-label">Flow control</label>
+                        <div>
+                          <div id="printerflow" class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="printerflow" id="prtflownone" value="none" autocomplete="off" checked>
+                            <label class="btn btn-secondary" for="prtflownone">None</label>
+                            <input type="radio" class="btn-check" name="printerflow" id="prtflowhard" value="hardware" autocomplete="off">
+                            <label class="btn btn-secondary" for="prtflowhard">Hardware</label>
+                            <input type="radio" class="btn-check" name="printerflow" id="prtflowsoft" value="software" autocomplete="off">
+                            <label class="btn btn-secondary" for="prtflowsoft">Software</label>
+                            <input type="radio" class="btn-check" name="printerflow" id="prtflowboth" value="both" autocomplete="off">
+                            <label class="btn btn-secondary" for="prtflowboth">Both</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="serialdelay" class="form-label">Character delay</label>
+                        <div>
+                          <input id="serialdelay" class="w-75" type="range" min="0" max="1000" value="0">
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div class="mb-3">
-                    <label for="printerparity" class="form-label">Parity</label>
-                    <div>
-                      <div id="printerparity" class="btn-group" role="group">
-                        <input type="radio" class="btn-check" name="printerparity" id="prtparitynone" value="none" autocomplete="off" checked>
-                        <label class="btn btn-secondary" for="prtparitynone">None</label>
-
-                        <input type="radio" class="btn-check" name="printerparity" id="prtparityeven" value="even" autocomplete="off" >
-                        <label class="btn btn-secondary" for="prtparityeven">Even</label>
-
-                        <input type="radio" class="btn-check" name="printerparity" id="prtparityodd" value="odd" autocomplete="off" >
-                        <label class="btn btn-secondary" for="prtparityodd">Odd</label>
+                </div>
+                <div class="pt-2">
+                  <div class="menuoptcollapse pb-2 pe-3">
+                    <hr />
+                    <span>
+                      <button class="menuoptcollapsebutton nav-link" data-bs-toggle="collapse" data-bs-target="#printoptions" aria-expanded="false" aria-controls="printoptions">
+                        Print preferences
+                        <i class="bi bi-caret-down-fill pt-2" style="font-size: small"></i>
+                      </button>
+                    </span>
+                  </div>
+                  <div class="collapse" id="printoptions">
+                    <div class="mb-3">
+                      <label for="printereol" class="form-label">End of line</label>
+                      <div>
+                        <div id="printereol" class="btn-group" role="group">
+                          <input type="radio" class="btn-check" name="printereol" id="prteolcr" value="CR" autocomplete="off">
+                          <label class="btn btn-secondary" for="prteolcr">CR</label>
+                          <input type="radio" class="btn-check" name="printereol" id="prteolcrlf" value="CRLF" autocomplete="off" checked>
+                          <label class="btn btn-secondary" for="prteolcrlf">CR and LF</label>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="mb-3">
-                    <label for="printerstop" class="form-label">Stop bits</label>
-                    <div>
-                      <div id="printerstop" class="btn-group" role="group">
-                        <input type="radio" class="btn-check" name="printerstop" id="prtstop1" value="1" autocomplete="off" checked>
-                        <label class="btn btn-secondary" for="prtstop1">1</label>
-
-                        <input type="radio" class="btn-check" name="printerstop" id="prtstop2" value="2" autocomplete="off" >
-                        <label class="btn btn-secondary" for="prtstop2">2</label>
+                    <div class="mb-3">
+                      <label for="printereop" class="form-label">End of print</label>
+                      <div>
+                        <div id="printereop" class="btn-group" role="group">
+                          <input type="radio" class="btn-check" name="printereop" id="prteopnl" value="NL" autocomplete="off" checked>
+                          <label class="btn btn-secondary" for="prteopnl">New Line</label>
+                          <input type="radio" class="btn-check" name="printereop" id="prteopff" value="FF" autocomplete="off">
+                          <label class="btn btn-secondary" for="prteopff">Form Feed</label>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="mb-3">
-                    <label for="printerflow" class="form-label">Flow control</label>
-                    <div>
-                      <div id="printerflow" class="btn-group" role="group">
-                        <input type="radio" class="btn-check" name="printerflow" id="prtflownone" value="none" autocomplete="off" checked>
-                        <label class="btn btn-secondary" for="prtflownone">None</label>
-
-                        <input type="radio" class="btn-check" name="printerflow" id="prtflowhard" value="hardware" autocomplete="off" >
-                        <label class="btn btn-secondary" for="prtflowhard">Hardware</label>
-
-                        <input type="radio" class="btn-check" name="printerflow" id="prtflowsoft" value="software" autocomplete="off" >
-                        <label class="btn btn-secondary" for="prtflowsoft">Software</label>
-
-                        <input type="radio" class="btn-check" name="printerflow" id="prtflowboth" value="both" autocomplete="off" >
-                        <label class="btn btn-secondary" for="prtflowboth">Both</label>
+                    <div class="mb-2">
+                      <label for="leftmargin" class="form-label">Left margin</label>
+                      <div>
+                        <input id="leftmargin" class="w-75" type="range" min="1" max="30" value="0">
                       </div>
                     </div>
-                  </div>
-                  <div class="mb-3">
-                    <label for="serialdelay" class="form-label">Character delay</label>
-                    <div>
-                      <input id="serialdelay" class="w-75" type="range" min="0" max="1000" value="0">
+                    <div class="mb-2">
+                      <label for="dotdensity" class="form-label">Dot density</label>
+                      <div>
+                        <input id="dotdensity" class="w-75" type="range" min="0" max="1" value="0">
+                      </div>
                     </div>
                   </div>
                 </div>
