@@ -65,7 +65,7 @@ def printout(_, store, name):
 def printoutdel(_, store, name):
     return JsonResponse(services.delete_printout(storename(store), name))
 
-@server.route("/printouts/<store>/<file>/printer", methods=['PUT'])
+@server.route("/printouts/<store>/<name>/printer", methods=['PUT'])
 def printoutprint(_, store, name):
     return JsonResponse(services.print_printout(storename(store), name))
 
