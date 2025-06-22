@@ -75,7 +75,7 @@ async function install() {
             updateprogress(progresselement, 0);
 
             const hasnetwork = await repl.hasnetwork();
-            const webfilter = (d) => d.filter(d => hasnetwork || d.type !== "web");
+            const webfilter = (d) => d ? d.filter(d => hasnetwork || d.type !== "web") : [];
 
             const distrofiles = webfilter(await getdistro());
             const installfiles = [...distrofiles];
