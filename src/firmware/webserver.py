@@ -114,6 +114,10 @@ def setserialflow(request):
     response = services.setserialflow(request.data['hardware'], request.data['software'], request.data['delayms'])
     return JsonResponse(response)
 
+@server.route("/printer/network/address/<value>", methods=['PUT'])
+def setprinteraddress(_, value):
+    return JsonResponse(services.setprinteraddress(value))
+
 @server.route("/log")
 def getlog(_):
     return JsonResponse(services.getlogfile())

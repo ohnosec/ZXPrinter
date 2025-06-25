@@ -41,11 +41,17 @@ const requests = {
         command: "setdensity",
         paramnames: ["value"]
     },
-   setprttarget: {
+   setprintertarget: {
       route: "printer/{target}",
       method: "PUT",
       command: "setprinter",
       paramnames: ["target"]
+    },
+    setprinteraddress: {
+      route: "printer/network/address/{address}",
+      method: "PUT",
+      command: "setprinteraddress",
+      paramnames: ["address"]
     },
     setserialsetting: {
       route: "printer/serial/settings",

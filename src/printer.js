@@ -16,7 +16,7 @@ async function setprinterenable(enabled) {
         document.getElementById("galtgtpc").checked = true;
         changegallerytarget();
         printersettings.hide();
-        await execrequest(requests.setprttarget, {target:"off"});
+        await execrequest(requests.setprintertarget, {target:"off"});
     }
 }
 
@@ -53,7 +53,13 @@ async function changeprintertarget() {
         serialsettings.hide();
     }
 
-    await execrequest(requests.setprttarget, {target:target})
+    if (target.toLowerCase() == "network") {
+        networksettings.show();
+    } else {
+        networksettings.hide();
+    }
+
+    await execrequest(requests.setprintertarget, {target:target})
 }
 
 async function changeserial() {
@@ -102,6 +108,12 @@ async function changeserial() {
     });
 }
 
+async function changeaddress(event) {
+    const address = event.target.value.trim();
+
+    await execrequest(requests.setprinteraddress, {address:address});
+}
+
 const prtbaud = document.getElementById("printerbaud");
 const prtbauddrop = document.getElementById("printerbauddrop");
 prtbauddrop.addEventListener("hide.bs.dropdown", async event => {
@@ -134,6 +146,11 @@ const printoptions = bootstrap.Collapse.getOrCreateInstance(printoptionselement,
   toggle: false
 });
 
+const networksettingseelement = document.getElementById("printernetwork");
+const networksettings = bootstrap.Collapse.getOrCreateInstance(networksettingseelement, {
+    toggle: false
+});
+
 const printeropt = document.getElementById("printersettings");
 printeropt.addEventListener("show.bs.collapse", async (event) => {
     switch(event.target.id) {
@@ -156,6 +173,7 @@ document.getElementById("leftmargin").addEventListener("change", changeleftmargi
 document.getElementById("dotdensity").addEventListener("change", changedotdensity);
 document.getElementById("printertarget").addEventListener("change", changeprintertarget);
 document.getElementById("serialsettings").addEventListener("change", changeserial);
+document.getElementById("printeraddress").addEventListener("focusout", changeaddress)
 
 export {
     setprinterenable

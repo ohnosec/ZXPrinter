@@ -22,9 +22,6 @@ def fillarray(r0, r1, r2):
     sub(r1, 1)
     bne(loop)
 
-async def nullwrite(data):
-    pass
-
 enabled = False
 linefeed = True
 formfeed = False
@@ -34,11 +31,33 @@ dotdensity = 0      # esp/p dot density (see esp/p table in docs)
 xscale = 1
 
 linebytes = const(32)
-maxxscale = const(2)
-buffer = bytearray(linebytes*8*maxxscale)
-row = 7
 
 printerlock = Lock()
+
+class Port:
+    async def openport(self):
+        pass
+
+    async def writeport(self, line):
+        pass
+
+    async def closeport(self):
+        pass
+
+nullport = Port()
+activeport = nullport
+
+def setport(port):
+    global activeport
+
+    activeport = port
+
+def setenabled(state):
+    global enabled
+
+    enabled = state
+    if not enabled:
+        setport(nullport)
 
 def setlinefeed(state):
     global linefeed
@@ -64,76 +83,94 @@ def setdensity(value):
     dotdensity = 0 if density == 0 else 1
     xscale = 1 if density == 0 else 2
 
-def setenabled(state):
-    global write
-    global enabled
+class Protocol:
+    async def begin(self):
+        pass
 
-    if not state:
-        write = nullwrite
+    async def writerow(self, rowbuffer):
+        pass
 
-    enabled = state
+    async def end(self):
+        pass
 
-setenabled(False)
+class EscpProtocol(Protocol):
+    def __init__(self):
+        maxxscale = const(2)
+        self.buffer = bytearray(linebytes*8*maxxscale)
+        self.row = 7
 
-async def endofline():
-    await write(b"\r")
-    if linefeed:
-        await write(b"\n")
+    async def begin(self):
+        self.row = 7
+        fillarray(self.buffer, len(self.buffer), 0)
+        await activeport.writeport(b"\x1b@")               # initialize printer
+        await activeport.writeport(b"\x1b3%c" % 24)        # set line spacing 24/180=8*1/60 (i.e. 8 dots @60 dpi)
+        await activeport.writeport(b"\x1bP")               # set pitch to 10cpi
+        await activeport.writeport(b"\x1bl%c" % leftmargin)# set left margin
+        await self.endofline()
 
-async def writebuffer(buffer):
-    await write(b"\x1b*%c\x00%c" % (dotdensity, xscale))
-    await write(buffer)
-    await endofline()
+    async def endofline(self):
+        await activeport.writeport(b"\r")
+        if linefeed:
+            await activeport.writeport(b"\n")
 
-async def writerow(rowbuffer):
-    global linebytes
-    global xscale
-    global buffer
-    global row
+    async def writeline(self, buffer):
+        await activeport.writeport(b"\x1b*%c\x00%c" % (dotdensity, xscale))
+        await activeport.writeport(buffer)
+        await self.endofline()
 
-    column = 0
-    for byte in rowbuffer:
-        for bit in bytes(range(7, -1, -1)):
-            for _ in range(xscale):
-                if byte & (1<<bit) != 0:
-                    buffer[column] |= (1<<row)
-                column += 1
-    row -= 1
-    if row < 0:
-        await writebuffer(buffer)
-        fillarray(buffer, len(buffer), 0)
-        row = 7
+    async def writerow(self, rowbuffer):
+        global xscale
+
+        column = 0
+        for byte in rowbuffer:
+            for bit in bytes(range(7, -1, -1)):
+                for _ in range(xscale):
+                    if byte & (1<<bit) != 0:
+                        self.buffer[column] |= (1<<self.row)
+                    column += 1
+        self.row -= 1
+        if self.row < 0:
+            await self.writeline(self.buffer)
+            fillarray(self.buffer, len(self.buffer), 0)
+            self.row = 7
+
+    async def end(self):
+        if self.row != 7:
+            await self.writeline(self.buffer)
+        if formfeed:
+            await activeport.writeport(b"\r\f")
+        else:
+            await self.endofline()
+        await activeport.writeport(b"\x1b@")               # initialize printer
+
+escpprotocol = EscpProtocol()
+activeprotocol = escpprotocol
+
+def setprotocol(protocol):
+    global activeprotocol
+
+    activeprotocol = protocol
+
+def resetprotocol():
+    global activeprotocol
+
+    activeprotocol = escpprotocol
 
 async def writeopen():
-    global linebytes
-    global xscale
-    global buffer
-    global row
+    await activeport.openport()
+    await activeprotocol.begin()
 
-    row = 7
-    fillarray(buffer, len(buffer), 0)
-    await write(b"\x1b@")               # initialize printer
-    await write(b"\x1b3%c" % 24)        # set line spacing 24/180=8*1/60 (i.e. 8 dots @60 dpi)
-    await write(b"\x1bP")               # set pitch to 10cpi
-    await write(b"\x1bl%c" % leftmargin)# set left margin
-    await endofline()
+async def writerow(row):
+    await activeprotocol.writerow(row)
 
 async def writeclose():
-    global row
-    global buffer
-
-    if row != 7:
-        await writebuffer(buffer)
-    if formfeed:
-        await write(b"\r\f")
-    else:
-        await endofline()
-    await write(b"\x1b@")               # initialize printer
+    await activeprotocol.end()
+    await activeport.closeport()
 
 class FileRowGeneratorAsync:
     def __init__(self, filename):
         self.filehandle = UnpackBitsFile(filename)
-        self.chunk = bytearray(32)
+        self.row = bytearray(32)
 
     def __aiter__(self):
         return self
@@ -144,15 +181,11 @@ class FileRowGeneratorAsync:
             if byte is None:
                 self.filehandle.close()
                 raise StopAsyncIteration
-            self.chunk[rowpos] = byte
-        return self.chunk
+            self.row[rowpos] = byte
+        return self.row
 
-async def print(rows, message, prefix, isforever):
+async def printrows(rows, message, prefix, isforever):
     starttime = None
-    rowbyte = 0
-    rowbit = 7
-    rowbuffer = bytearray(linebytes)
-    rowbufferpos = 0
     opened = False
     locked = False
     logging.info(message)
@@ -169,21 +202,7 @@ async def print(rows, message, prefix, isforever):
                 if not opened:
                     opened = True
                     await writeopen()
-                for byte in row:
-                    for bytebit in range(7,-1,-1):
-                        pixel = byte & (1<<bytebit)
-                        if pixel:
-                            rowbyte = rowbyte | (1<<rowbit)
-                        rowbit -= 1
-                        if rowbit<0:
-                            rowbuffer[rowbufferpos] = rowbyte
-                            rowbufferpos += 1
-                            if rowbufferpos>=linebytes:
-                                await writerow(rowbuffer)
-                                fillarray(rowbuffer, len(rowbuffer), 0)
-                                rowbufferpos = 0
-                            rowbit = 7
-                            rowbyte = 0
+                await writerow(row)
             if opened:
                 await writeclose()
                 opened = False
@@ -200,7 +219,7 @@ async def print(rows, message, prefix, isforever):
             break
 
 async def capture(rows):
-    await print(rows, 'Waiting for printout to parallel or serial', "ZX/TS", True)
+    await printrows(rows, 'Waiting for printout to parallel or serial', "ZX/TS", True)
 
 async def printfile(filename):
-    await print(FileRowGeneratorAsync(filename), f'Printing file {filename}', "File", False)
+    await printrows(FileRowGeneratorAsync(filename), f'Printing file {filename}', "File", False)

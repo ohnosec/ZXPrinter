@@ -56,6 +56,10 @@ async def copyprintout(params):
 async def setprinter(params):
     return services.setprintertarget(params["target"])
 
+@command("setprinteraddress", "address")
+async def setprinteraddress(params):
+    return services.setprinteraddress(params["address"])
+
 @command("setcapture", "state")
 async def setcapture(params):
     return services.setprintercapture(params["state"])

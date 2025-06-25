@@ -73,14 +73,18 @@ As well as the basic function of capturing printouts from your Sinclair/Timex co
 ### List of features:
 
 - View printouts in a web browser
-- Print to a printer on your PC
+- Print to a printer on your PC from the web browser
+- Print to a serial or parallel printer with support for:
+  - Epson compatible dot matrix printer
+  - Thermal receipt printer
+- Print to a network printer with support for:
+  - Epson inkjet printer
 - Download printouts as image files in PNG, JPEG, or BMP format
-- Converts printouts to text using OCR
-- Converts printouts of program listings (LLIST) to ZMakebas files using OCR
+- Converts printouts to text
+- Converts printouts of program listings (LLIST) to ZMakebas
 - Can be connected over USB, or without cables, over a WIFI network
 - Store and manage printouts on an SD card
 - Self-host the web app on the Pico ZX Printer, or your PC
-- Print directly to a dot matrix printer on a serial or parallel port (uses ESC/P and ESC/POS)
 
 ## ⚙️ How does it work?
 Unlike other ZX printer alternatives back in the day, the Pico ZX Printer doesn't replace the internal ROM of the Sinclair/Timex computer. Instead it uses the existing printer functionality built-in to the Sinclair/Timex computer by emulating the protocol of the ZX Printer.

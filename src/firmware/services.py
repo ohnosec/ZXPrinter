@@ -1,9 +1,10 @@
 import os
 import json
 from micropython import const
+from phew import server, logging
 import parallelprinter
 import serialprinter
-from phew import server, logging
+import networkprinter
 import fileprinter
 import physicalprinter
 import settings
@@ -105,6 +106,13 @@ def setprintertarget(target):
         serialprinter.setactive()
     elif target == "parallel":
         parallelprinter.setactive()
+    elif target == "network":
+        networkprinter.setactive()
+    return {}
+
+def setprinteraddress(address):
+    logging.info(f"Setting printer address to {address}")
+    networkprinter.setaddress(address)
     return {}
 
 def setserialsettings(settings):
