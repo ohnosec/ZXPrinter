@@ -61,12 +61,12 @@ def print_printout(store, name):
     server.loop.create_task(physicalprinter.printfile(filename))
     return {}
 
-def copy_printout(sourcestore, targetstore, filename):
-    fromfilename = fileprinter.getfilepath(sourcestore, filename)
+def copy_printout(sourcestore, targetstore, filenames):
+    fromfilenames = [fileprinter.getfilepath(sourcestore, fn) for fn in filenames]
     tofilename = fileprinter.nextfilename(targetstore)
     fileprinter.savesettings(targetstore)
-    logging.info(f"Copying from {fromfilename} to {tofilename}")
-    copyfile(fromfilename, tofilename)
+    logging.info(f"Copying from {fromfilenames} to {tofilename}")
+    copyfile(fromfilenames, tofilename)
     return {}
 
 def setprintercapture(state):
@@ -238,19 +238,24 @@ async def getlogfile():
     finally:
         yield ']'
 
-def copyfile(fromfilename, tofilename):
+def copyfile(fromfilenames, tofilename):
     BUFFER_SIZE = const(128)
     try:
-        with open(fromfilename, "rb") as src_file:
-            with open(tofilename, "wb") as dst_file:
-                while True:
-                    buf = src_file.read(BUFFER_SIZE)
-                    if len(buf) > 0:
-                        dst_file.write(buf)
-                    if len(buf) < BUFFER_SIZE:
-                        break
+        with open(tofilename, "wb") as dst_file:
+            for fromfilename in fromfilenames:
+                with open(fromfilename, "rb") as src_file:
+                    while True:
+                        buf = src_file.read(BUFFER_SIZE)
+                        if len(buf) > 0:
+                            dst_file.write(buf)
+                        if len(buf) < BUFFER_SIZE:
+                            break
         return True
     except:
+        try:
+            os.remove(tofilename)
+        except:
+            pass
         return False
 
 def getcardinfo():

@@ -5,6 +5,7 @@ import network, ntptime
 from phew import server, logging
 from phew.server import redirect, Response, FileResponse
 from phew.template import render_template
+from system import logexception
 import services
 import settings
 import fileprinter
@@ -21,11 +22,29 @@ class JsonResponse(Response):
             'Cache-Control': 'no-cache'
         })
 
+class BadRequest(Exception):
+    pass
+
 def addstaticroute(filename):
     # maxage = 120    # 2 minutes
     maxage = 10800  # 3 hours
     handler = lambda _: FileResponse(f"/{filename}", headers={'Cache-Control': f'max-age={maxage}'})
     server.add_route(f"/{filename}", handler)
+
+def exceptionhandler(request, ex):
+    if type(ex) is BadRequest:
+        status = 400
+    else:
+        status = 500
+        logexception(ex)
+    accepttype = request.headers.get("accept")
+    if accepttype == "application/json":
+        return JsonResponse({
+            "error": str(ex)
+        }, status=status)
+    return Response(f"<html><body>Error: {str(ex)}</body></html>", status, headers={
+        "Content-Type": "text/html"
+        })
 
 def initialize(p):
     global connectedpixel
@@ -41,6 +60,8 @@ def initialize(p):
                 filename = file["target"]
                 if filename != "local.js":
                     addstaticroute(filename)
+
+    server.set_exception(exceptionhandler)
 
     network.hostname(settings.gethostname())
     wlan = network.WLAN(network.STA_IF)
@@ -72,14 +93,21 @@ def printoutprint(_, store, name):
 @server.route("/printouts/<target_store>", methods=['POST'])
 def printoutcopy(request, target_store):
     target_parts = request.path.split("/")
-    source_parts = request.data["source"].split("/")
-    if len(target_parts)<3 or len(source_parts)<4 or \
-       target_parts[0]!="" or source_parts[0]!="" or \
-       target_parts[1]!= source_parts[1]:
-        raise Exception("bad request")
-    source_store = source_parts[2]
-    name = source_parts[3]
-    return JsonResponse(services.copy_printout(storename(source_store), storename(target_store), name))
+    sources = request.data.get("source")
+    if isinstance(sources, str):
+        sources = [sources]
+    if sources is None or len(sources) == 0:
+        raise BadRequest("Missing source")
+    source_names = []
+    for source in sources:
+        source_parts = source.split("/")
+        if len(target_parts)<3 or len(source_parts)<4 or \
+        target_parts[0]!="" or source_parts[0]!="" or \
+        target_parts[1]!= source_parts[1]:
+            raise BadRequest(f"Source '{source}' or target '{target_store}' is invalid")
+        source_store = source_parts[2]
+        source_names.append(source_parts[3])
+    return JsonResponse(services.copy_printout(storename(source_store), storename(target_store), source_names))
 
 @server.route("/printer/capture/<state>", methods=['PUT'])
 def setcapture(_, state):

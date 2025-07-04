@@ -24,14 +24,28 @@ const printselected = new Map();
 printselected.set(PrintSource.FLASH, []);
 printselected.set(PrintSource.SD, []);
 
-const printcopies = new Map();
-printcopies.set(PrintSource.FLASH, []);
-printcopies.set(PrintSource.SD, []);
+const printcopies = [];
 
 let printsource = PrintSource.FLASH;
 let printtarget = PrintTarget.PC;
 
 const jsPDF = window.jspdf.jsPDF;
+
+class PrintItem {
+    constructor(source, filename) {
+        this.source = source;
+        this.filename = filename;
+    }
+}
+
+function arrayremove(array, callback) {
+    let i = array.length;
+    while(i--) {
+        if (callback(array[i], i)) {
+            array.splice(i, 1);
+        }
+    }
+}
 
 function unpack(packed) {
     // PackBits unpack
@@ -327,12 +341,6 @@ async function reloadall() {
     for(const prtelement of prtelements) {
         prtelement.remove();
     }
-    for (const deleteelement of document.getElementsByClassName("gallerydelete")) {
-        deleteelement.classList.add('d-none');
-    }
-    for (const copyelement of document.getElementsByClassName("gallerycopy")) {
-        copyelement.classList.add('d-none');
-    }
     await renderall();
 }
 
@@ -604,17 +612,76 @@ async function converttext(name, element) {
     }, 100);
 }
 
+function getchecked() {
+    const checked = document.querySelectorAll('.prtcheck:checked');
+    return [...checked].map(check => {
+        const prt = check.closest(".prt");
+        const filename = getfilenamefromprt(prt);
+        return new PrintItem(printsource, filename);
+    });
+}
+
+function gettoolelement(source, classname) {
+    const sourceelementid = source == PrintSource.FLASH ? 'galleryflash' : 'gallerysd';
+    const sourceelement = document.getElementById(sourceelementid);
+    return sourceelement.closest(".gallerysource").getElementsByClassName(classname)[0];
+}
+
+function refreshtools() {
+    const flashpaste = gettoolelement(PrintSource.FLASH, 'gallerypaste');
+    const sdpaste = gettoolelement(PrintSource.SD, 'gallerypaste');
+
+    if (printcopies.length > 0) {
+        flashpaste.classList.remove("d-none");
+        sdpaste.classList.remove("d-none");
+    } else {
+        flashpaste.classList.add("d-none");
+        sdpaste.classList.add("d-none");
+    }
+
+    const flashdelete = gettoolelement(PrintSource.FLASH, 'gallerydelete');
+    const sddelete = gettoolelement(PrintSource.SD, 'gallerydelete');
+
+    const flashcopy = gettoolelement(PrintSource.FLASH, 'gallerycopy');
+    const sdcopy = gettoolelement(PrintSource.SD, 'gallerycopy');
+
+    const flashjoin = gettoolelement(PrintSource.FLASH, 'galleryjoin');
+    const sdjoin = gettoolelement(PrintSource.SD, 'galleryjoin');
+
+    if (printselected.get(PrintSource.FLASH).length > 0) {
+        flashdelete.classList.remove("d-none");
+        flashcopy.classList.remove("d-none");
+    } else {
+        flashdelete.classList.add('d-none');
+        flashcopy.classList.add('d-none');
+    }
+
+    if (printselected.get(PrintSource.SD).length > 0) {
+        sddelete.classList.remove("d-none");
+        sdcopy.classList.remove("d-none");
+    } else {
+        sddelete.classList.add('d-none');
+        sdcopy.classList.add('d-none');
+    }
+
+    if (printselected.get(PrintSource.FLASH).length > 1) {
+        flashjoin.classList.remove("d-none");
+    } else {
+        flashjoin.classList.add('d-none');
+    }
+
+    if (printselected.get(PrintSource.SD).length > 1) {
+        sdjoin.classList.remove("d-none");
+    } else {
+        sdjoin.classList.add('d-none');
+    }
+}
+
 async function galleryflash() {
+    refreshtools();
+
     const flashelement = document.getElementById('galleryflash');
     const sdelement = document.getElementById('gallerysd');
-
-    if (printcopies.get(PrintSource.SD).length > 0) {
-        flashelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.remove("d-none");
-        sdelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.add("d-none");
-    } else {
-        flashelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.add("d-none");
-        sdelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.add("d-none");
-    }
 
     flashelement.classList.add("active");
     sdelement.classList.remove("active");
@@ -627,16 +694,10 @@ async function galleryflash() {
 }
 
 async function gallerysd() {
+    refreshtools();
+
     const flashelement = document.getElementById('galleryflash');
     const sdelement = document.getElementById('gallerysd');
-
-    if (printcopies.get(PrintSource.FLASH).length > 0) {
-        sdelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.remove("d-none");
-        flashelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.add("d-none");
-    } else {
-        sdelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.add("d-none");
-        flashelement.closest(".gallerysource").getElementsByClassName('gallerypaste')[0].classList.add("d-none");
-    }
 
     flashelement.classList.remove("active");
     sdelement.classList.add("active");
@@ -653,22 +714,32 @@ function confirmdelete() {
 }
 
 async function deleteprintout() {
-    const checked = document.querySelectorAll('.prtcheck:checked');
-    for (const check of checked) {
-        const prt = check.closest(".prt");
-        await execrequest(requests.deleteprintout, { store: getstorename(), name: getfilenamefromprt(prt) });
+    for (const print of getchecked()) {
+        await execrequest(requests.deleteprintout, { store: getstorename(), name: print.filename });
+        arrayremove(printselected.get(printsource), filename => filename == print.filename);
+        arrayremove(printcopies, c => c.source == printsource && c.filename == print.filename);
     }
     confirmdeletemodal.hide();
+    refreshtools();
     await reloadall();
-  }
+}
+
+async function joinprintout() {
+    const storename = getstorename();
+    const filenames = getchecked().map(p => p.filename);
+
+    await execrequest(requests.joinprintout, { names: filenames, fromstore: storename, tostore: storename });
+
+    await reloadall();
+}
 
 function copyprintout(element) {
-    printcopies.get(printsource).length = 0;
-    const checked = document.querySelectorAll('.prtcheck:checked');
-    for (const check of checked) {
-        const prt = check.closest(".prt");
-        printcopies.get(printsource).push(getfilenamefromprt(prt));
+    printcopies.length = 0;
+    for (const print of getchecked()) {
+        printcopies.push(print);
     }
+
+    refreshtools();
 
     const tooltip = bootstrap.Tooltip.getOrCreateInstance(element);
     tooltip.setContent({ '.tooltip-inner': 'Copied' });
@@ -676,9 +747,8 @@ function copyprintout(element) {
 }
 
 async function pasteprintout() {
-    const fromprintsource = printsource == PrintSource.FLASH ? PrintSource.SD : PrintSource.FLASH;
-    for(const printoutname of printcopies.get(fromprintsource)) {
-        await execrequest(requests.copyprintout, { name: printoutname, fromstore: getstorename(fromprintsource), tostore: getstorename() });
+    for(const printcopy of printcopies) {
+        await execrequest(requests.copyprintout, { name: printcopy.filename, fromstore: getstorename(printcopy.source), tostore: getstorename() });
     }
     await reloadall();
 }
@@ -697,24 +767,8 @@ function sourcegallery() {
 }
 
 function selectprintout() {
-    const checked = document.querySelectorAll('.prtcheck:checked');
-    const source = sourcegallery();
-    const deleteicon = source.getElementsByClassName("gallerydelete")[0];
-    const copyicon = source.getElementsByClassName("gallerycopy")[0];
-
-    printselected.set(printsource, [...checked].map(check => {
-        const prt = check.closest(".prt");
-        const name = getfilenamefromprt(prt);
-        return name;
-    }));
-
-    if (checked.length > 0) {
-        deleteicon.classList.remove('d-none');
-        copyicon.classList.remove('d-none');
-    } else {
-        deleteicon.classList.add('d-none');
-        copyicon.classList.add('d-none');
-    }
+    printselected.set(printsource, getchecked().map(selected => selected.filename));
+    refreshtools();
 }
 
 async function gallerycapture() {
@@ -810,7 +864,6 @@ async function changeconvert() {
 function handlesd(ismounted) {
     const sdsource = document.getElementById("gallerysdsource");
     printcache.set(PrintSource.SD, new Map());
-    printcopies.set(PrintSource.SD, []);
     printselected.set(PrintSource.SD, []);
     if (ismounted) {
         sdsource.classList.remove("d-none");
@@ -818,6 +871,7 @@ function handlesd(ismounted) {
             reloadall();
         }
     } else {
+        arrayremove(printcopies, c => c.source == PrintSource.SD);
         sdsource.classList.add("d-none");
         if (printsource == PrintSource.SD) {
             const button = document.getElementById("galleryflashbutton");
@@ -868,6 +922,6 @@ document.getElementById("gallerytarget").addEventListener("change", changegaller
 export {
     renderall,
     galleryflash, gallerysd,
-    deleteprintout, selectprintout, copyprintout, pasteprintout, confirmdelete,
+    deleteprintout, selectprintout, joinprintout, copyprintout, pasteprintout, confirmdelete,
     gallerycapture, galleryadvanced, galleryselectall, changegallerytarget
 }

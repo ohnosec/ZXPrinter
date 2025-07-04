@@ -50,7 +50,11 @@ async def printprintout(params):
 
 @command("copyprintout", "name", "fromstore", "tostore")
 async def copyprintout(params):
-    return services.copy_printout(storename(params["fromstore"]), storename(params["tostore"]), params["name"])
+    return services.copy_printout(storename(params["fromstore"]), storename(params["tostore"]), [params["name"]])
+
+@command("joinprintout", "names", "fromstore", "tostore")
+async def joinprintout(params):
+    return services.copy_printout(storename(params["fromstore"]), storename(params["tostore"]), params["names"].split("+"))
 
 @command("setprinter", "target")
 async def setprinter(params):

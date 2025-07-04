@@ -54,6 +54,7 @@ async function execute(command, params = [], timeout = 5000) {
     let responsetext;
     try {
         serial.flush();
+        params = params.map(p => Array.isArray(p) ? p.join('+') : p);
         params = params.map(p => encodeURIComponent(p)).join(' ');
         const startTime = (new Date()).getTime();
         const fullcommand = `${command} ${params}`.trimEnd();

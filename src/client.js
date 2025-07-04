@@ -89,6 +89,17 @@ const requests = {
       command: "printprintout",
       paramnames: ["name", "store"]
     },
+    joinprintout: {
+        route: "printouts/{tostore}",
+        method: "POST",
+        command: "joinprintout",
+        paramnames: ["names", "fromstore", "tostore"],
+        body: (params) => {
+            const sourcename = replaceparams("/printouts/{fromstore}/{name}", params);
+            const sourcenames = params["names"].map(name => sourcename.replace("{name}", name));
+            return { source: sourcenames }
+        }
+    },
     copyprintout: {
         route: "printouts/{tostore}",
         method: "POST",
@@ -151,12 +162,22 @@ function ishttpallowed() {
     return true;
 }
 
+function replaceparams(pattern, params) {
+    let value = pattern;
+    for (const paramname in params) {
+        if (typeof paramname === "string" || paramname instanceof String) {
+            value = value.replace(`{${paramname}}`, params[paramname]);
+        }
+    }
+    return value;
+}
+
 async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
     if (!ishttpallowed()) {
         throw new ShowError("Secure web hosting (https) doesn't support using the web to access ZX Printer");
     }
     userCancelController = new AbortController();
-    const body = request.body ? structuredClone(request.body) : {};
+    let body = request.body && typeof request.body !== "function" ? structuredClone(request.body) : {};
     let path = request.route;
     for(const paramname of request.paramnames) {
       if (request.route.includes(`{${paramname}}`)) {
@@ -168,17 +189,21 @@ async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
       }
     }
     if (request.body) {
-        for (const property in body) {
-            if (typeof property === "string" || property instanceof String) {
-                for(const paramname of request.paramnames) {
-                    body[property] = body[property].replace(`{${paramname}}`, params[paramname]);
+        if (typeof request.body === "function") {
+            body = request.body(params);
+        } else {
+            for (const property in body) {
+                if (typeof property === "string" || property instanceof String) {
+                    for(const paramname of request.paramnames) {
+                        body[property] = body[property].replace(`{${paramname}}`, params[paramname]);
+                    }
                 }
             }
         }
     }
     const requestinit = {
       method: request.method,
-      headers: {},
+      headers: { "Accept": "application/json" },
       signal: AbortSignal.any([
         userCancelController.signal,
         AbortSignal.timeout(timeout)
