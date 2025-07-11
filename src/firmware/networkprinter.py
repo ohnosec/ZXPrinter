@@ -4,6 +4,7 @@ import struct
 import math
 from phew import logging
 import physicalprinter
+import settings
 from system import hasnetwork
 
 if hasnetwork():
@@ -12,6 +13,11 @@ if hasnetwork():
 RAWPORT = 9100
 
 address = None
+
+def getaddress():
+    global address
+
+    return address
 
 def setaddress(newaddress):
     global address
@@ -26,20 +32,24 @@ class NetworkPort(physicalprinter.Port):
     async def openport(self):
         global address
 
-        if not hasnetwork() or not address:
+        if not hasnetwork():
             self.sock = None
             self.writer = None
+            logging.error("Can't network print as there's no WIFI on this device")
             return
+        if not address:
+            self.sock = None
+            self.writer = None
+            logging.error("Network printer failed: no address set")
+            return
+        logging.info(f"Network printer connecting to '{address}'")
         try:
             self.sock = socket.socket()
             self.server = socket.getaddrinfo(address, RAWPORT)[0][-1]
             self.sock.connect(self.server)
             self.writer = asyncio.StreamWriter(self.sock, {})
         except Exception as ex:
-            if self.sock:
-                self.sock.close()
-            self.sock = None
-            self.writer = None
+            await self.closeport()
             logging.error(f"Network printer failed to connect: {ex}")
 
     async def closeport(self):
@@ -155,6 +165,7 @@ class EscprProtocol(physicalprinter.Protocol):
         await self.write(b"\x1b@")                                          # initialize printer
 
 escpprotocol = EscprProtocol()
+setaddress(settings.getprinteraddress())
 
 def setactive():
     physicalprinter.setprotocol(escpprotocol)

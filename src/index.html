@@ -354,10 +354,15 @@
           <div class="menucontent menuprinter w-100">
             <h3 class="menutitle">Printer</h3>
             <div class="ps-2 pt-1">
-              <div class="mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="printerenable" onclick="app.setprinterenable(this)">
-                  <label class="form-check-label" for="printerenable">Printer enable</label>
+              <div>
+                <div class="mb-3 row w-100">
+                  <div class="col-auto form-check form-switch" style="margin-left: 12px !important;">
+                    <input class="form-check-input" type="checkbox" id="printerenable" onclick="app.setprinterenable(this)">
+                    <label class="form-check-label" for="printerenable">Printer enable</label>
+                  </div>
+                  <div id="printertest" class="col d-flex flex-row align-items-center justify-content-end pe-0 d-none">
+                    <button class="btn btn-primary btn-sm" style="background-color: rgb(65, 118, 198)" onclick="void app.testprinter()">Test</button>
+                  </div>
                 </div>
               </div>
               <div id="printersettings" class="collapse">

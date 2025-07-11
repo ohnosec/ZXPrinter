@@ -1,11 +1,18 @@
 import json
+from micropython import const
 
-SETTINGSFILE = const('/settings.json')
+SETTINGSFILE =   const("/settings.json")
+
+HOSTNAME =       const("hostname")
+SSID =           const("ssid")
+PASSWORD =       const("password")
+PRINTERADDRESS = const("printeraddress")
 
 settings = {
-    'hostname': 'zxprinter',
-    'ssid': '',
-    'password': ''
+    HOSTNAME: "zxprinter",
+    SSID: "",
+    PASSWORD: "",
+    PRINTERADDRESS: None
 }
 
 def initialize():
@@ -23,35 +30,45 @@ def load():
 def save():
     global settings
 
-    with open(SETTINGSFILE, 'w') as fp:
+    with open(SETTINGSFILE, "w") as fp:
         fp.write(json.dumps(settings))
 
 def gethostname():
     global settings
 
-    return settings['hostname']
+    return settings.get(HOSTNAME)
 
 def getssid():
     global settings
 
-    return settings['ssid']
+    return settings.get(SSID)
 
 def getpassword():
     global settings
 
-    return settings['password']
+    return settings.get(PASSWORD)
+
+def getprinteraddress():
+    global settings
+
+    return settings.get(PRINTERADDRESS)
 
 def sethostname(hostname):
     global settings
 
-    settings['hostname'] = hostname
+    settings[HOSTNAME] = hostname
 
 def setssid(ssid):
     global settings
 
-    settings['ssid'] = ssid
+    settings[SSID] = ssid
 
 def setpassword(password):
     global settings
 
-    settings['password'] = password
+    settings[PASSWORD] = password
+
+def setprinteraddress(address):
+    global settings
+
+    settings[PRINTERADDRESS] = address

@@ -17,6 +17,12 @@ const requests = {
       command: "setcapture",
       paramnames: ["state"]
     },
+    testprinter: {
+      route: "printer/test",
+      method: "POST",
+      command: "testprinter",
+      paramnames: []
+    },
     setendofline: {
         route: "printer/endofline/{char}",
         method: "PUT",
@@ -46,6 +52,12 @@ const requests = {
       method: "PUT",
       command: "setprinter",
       paramnames: ["target"]
+    },
+    getprinteraddress: {
+      route: "printer/network/address",
+      method: "GET",
+      command: "getprinteraddress",
+      paramnames: []
     },
     setprinteraddress: {
       route: "printer/network/address/{address}",
@@ -85,7 +97,7 @@ const requests = {
     },
     printprintout: {
       route: "printouts/{store}/{name}/printer",
-      method: "PUT",
+      method: "POST",
       command: "printprintout",
       paramnames: ["name", "store"]
     },

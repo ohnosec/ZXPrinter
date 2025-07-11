@@ -106,7 +106,7 @@ async function install() {
                     await repl.removedir("", ["printout", "sd", "settings.json"])
                 }
 
-                const todo = installfiles.length+1;
+                const todo = installfiles.length;
                 let done = 0;
                 await uploadfiles(repl, installfiles, () => {
                     done += 1;

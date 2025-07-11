@@ -1,14 +1,24 @@
 import { execrequest, requests } from "./client.js"
 import { changegallerytarget } from "./gallery.js"
 
+let firsttime = true;
+
 async function setprinterenable(enabled) {
     const galleryprints = document.querySelectorAll("#gallerytarget label");
+    const printertest = document.getElementById("printertest");
     if (enabled.checked) {
         for(const galleryprint of galleryprints) {
             galleryprint.classList.remove("disabled");
         }
         printersettings.show();
+        printertest.classList.remove("d-none");
         changeprintertarget();
+        if (firsttime) {
+            firsttime = false;
+            const printerresponse = await execrequest(requests.getprinteraddress);
+            const printeraddress = document.getElementById("printeraddress");
+            printeraddress.value = printerresponse.address ?? "";
+        }
     } else {
         for(const galleryprint of galleryprints) {
             galleryprint.classList.add("disabled");
@@ -16,8 +26,13 @@ async function setprinterenable(enabled) {
         document.getElementById("galtgtpc").checked = true;
         changegallerytarget();
         printersettings.hide();
+        printertest.classList.add("d-none");
         await execrequest(requests.setprintertarget, {target:"off"});
     }
+}
+
+async function testprinter() {
+    await execrequest(requests.testprinter)
 }
 
 async function changeendofline() {
@@ -176,5 +191,6 @@ document.getElementById("serialsettings").addEventListener("change", changeseria
 document.getElementById("printeraddress").addEventListener("focusout", changeaddress)
 
 export {
-    setprinterenable
+    setprinterenable,
+    testprinter
 }

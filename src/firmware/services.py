@@ -10,6 +10,8 @@ import physicalprinter
 import settings
 from system import hasnetwork
 
+testprinterfilename = const("/testprintout.cap")
+
 def initialise(p, sd):
     global connectedpixel
     global sdmanager
@@ -69,6 +71,11 @@ def copy_printout(sourcestore, targetstore, filenames):
     copyfile(fromfilenames, tofilename)
     return {}
 
+def testprinter():
+    logging.info(f"Printing a test page")
+    server.loop.create_task(physicalprinter.printfile(testprinterfilename))
+    return {}
+
 def setprintercapture(state):
     logging.info(f"Changing printer capture to {state}")
     state = state.lower()
@@ -113,7 +120,14 @@ def setprintertarget(target):
 def setprinteraddress(address):
     logging.info(f"Setting printer address to {address}")
     networkprinter.setaddress(address)
+    settings.setprinteraddress(address)
+    settings.save()
     return {}
+
+def getprinteraddress():
+    return {
+        "address": networkprinter.getaddress()
+    }
 
 def setserialsettings(settings):
     logging.info(f"Setting serial to {settings}")

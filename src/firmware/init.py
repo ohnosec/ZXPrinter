@@ -16,6 +16,9 @@ connectedpixel = pixel.create(pixeldriver.Pixel.GREEN)
 capturepixel = pixel.create(pixeldriver.Pixel.RED)
 connectedpixel.flash(500, 500, retrigger=True)
 
+import settings
+settings.initialize()
+
 import asyncio
 import gc
 from system import hasnetwork, logexception
@@ -27,7 +30,6 @@ import fileprinter
 import physicalprinter
 import services
 import serialserver
-import settings
 import sd
 
 if DEBUG:
@@ -43,7 +45,6 @@ webenabled = hasnetwork()
 
 sdmanager = sd.create()
 
-settings.initialize()
 services.initialise(connectedpixel, sdmanager)
 fileprinter.initialise(sdmanager)
 if webenabled:

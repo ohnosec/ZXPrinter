@@ -254,15 +254,15 @@ function rendercanvas(name, bitmap, mimetype) {
     const rows = Math.ceil(bitmap.length/rowbytes)
 
     const canvas = document.createElement('canvas');
-    const height=rows*scale;
-    const width=rowlength*scale;
+    const height = rows*scale;
+    const width = rowlength*scale;
 
-    canvas.height=height;
-    canvas.width=width;
+    canvas.height = height;
+    canvas.width = width;
 
     const context = canvas.getContext("2d");
-    const imageData=context.createImageData(width, height);
-    const data=imageData.data;
+    const imageData = context.createImageData(width, height);
+    const data = imageData.data;
     let dataindex=0;
 
     const paper = document.querySelector("#paper input[type='radio']:checked").value;
@@ -344,10 +344,13 @@ async function reloadall() {
     await renderall();
 }
 
+let rendering = false;
+
 async function renderall() {
-    fetchcancel();
+    if (rendering) fetchcancel();
     const format = document.querySelector("#format input[type='radio']:checked").value;
     try {
+        rendering = true;
         const names = await execrequest(requests.loadprintouts, { store: getstorename() });
         names.sort();
         for(const name of names) {
@@ -366,6 +369,7 @@ async function renderall() {
     } catch(error) {
         console.error('Error:', error);
     } finally {
+        rendering = false;
         updatetooltip();
     }
 }

@@ -11,15 +11,15 @@ import settings
 import fileprinter
 
 class JsonResponse(Response):
-    def __init__(self, body, content='application/json', status=200):
+    def __init__(self, body, content="application/json", status=200):
         if type(body).__name__ != "generator":
             body = json.dumps(body)
         super().__init__(body, status=status, headers={
-            'Content-Type': content,
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': '*',
-            'Access-Control-Allow-Headers': 'Content-Type, Accept',
-            'Cache-Control': 'no-cache'
+            "Content-Type": content,
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "Content-Type, Accept",
+            "Cache-Control": "no-cache"
         })
 
 class BadRequest(Exception):
@@ -28,23 +28,8 @@ class BadRequest(Exception):
 def addstaticroute(filename):
     # maxage = 120    # 2 minutes
     maxage = 10800  # 3 hours
-    handler = lambda _: FileResponse(f"/{filename}", headers={'Cache-Control': f'max-age={maxage}'})
+    handler = lambda _: FileResponse(f"/{filename}", headers={"Cache-Control": f"max-age={maxage}"})
     server.add_route(f"/{filename}", handler)
-
-def exceptionhandler(request, ex):
-    if type(ex) is BadRequest:
-        status = 400
-    else:
-        status = 500
-        logexception(ex)
-    accepttype = request.headers.get("accept")
-    if accepttype == "application/json":
-        return JsonResponse({
-            "error": str(ex)
-        }, status=status)
-    return Response(f"<html><body>Error: {str(ex)}</body></html>", status, headers={
-        "Content-Type": "text/html"
-        })
 
 def initialize(p):
     global connectedpixel
@@ -60,8 +45,6 @@ def initialize(p):
                 filename = file["target"]
                 if filename != "local.js":
                     addstaticroute(filename)
-
-    server.set_exception(exceptionhandler)
 
     network.hostname(settings.gethostname())
     wlan = network.WLAN(network.STA_IF)
@@ -82,15 +65,15 @@ def printouts(_, store):
 def printout(_, store, name):
     return JsonResponse(services.get_printout(storename(store), name))
 
-@server.route("/printouts/<store>/<name>", methods=['DELETE'])
+@server.route("/printouts/<store>/<name>", methods=["DELETE"])
 def printoutdel(_, store, name):
     return JsonResponse(services.delete_printout(storename(store), name))
 
-@server.route("/printouts/<store>/<name>/printer", methods=['PUT'])
+@server.route("/printouts/<store>/<name>/printer", methods=["PUT", "POST"])
 def printoutprint(_, store, name):
     return JsonResponse(services.print_printout(storename(store), name))
 
-@server.route("/printouts/<target_store>", methods=['POST'])
+@server.route("/printouts/<target_store>", methods=["POST"])
 def printoutcopy(request, target_store):
     target_parts = request.path.split("/")
     sources = request.data.get("source")
@@ -109,40 +92,48 @@ def printoutcopy(request, target_store):
         source_names.append(source_parts[3])
     return JsonResponse(services.copy_printout(storename(source_store), storename(target_store), source_names))
 
-@server.route("/printer/capture/<state>", methods=['PUT'])
+@server.route("/printer/capture/<state>", methods=["PUT"])
 def setcapture(_, state):
     return JsonResponse(services.setprintercapture(state))
 
-@server.route("/printer/endofline/<char>", methods=['PUT'])
+@server.route("/printer/endofline/<char>", methods=["PUT"])
 def setendofline(_, char):
     return JsonResponse(services.setprinterendofline(char))
 
-@server.route("/printer/endofprint/<char>", methods=['PUT'])
+@server.route("/printer/endofprint/<char>", methods=["PUT"])
 def setendofprint(_, char):
     return JsonResponse(services.setprinterendofprint(char))
 
-@server.route("/printer/leftmargin/<value>", methods=['PUT'])
+@server.route("/printer/leftmargin/<value>", methods=["PUT"])
 def setleftmargin(_, value):
     return JsonResponse(services.setprinterleftmargin(int(value)))
 
-@server.route("/printer/density/<value>", methods=['PUT'])
+@server.route("/printer/density/<value>", methods=["PUT"])
 def setdensity(_, value):
     return JsonResponse(services.setprinterdensity(int(value)))
 
-@server.route("/printer/<target>", methods=['PUT'])
+@server.route("/printer/test", methods=["POST"])
+def testprinter(_):
+    return JsonResponse(services.testprinter())
+
+@server.route("/printer/<target>", methods=["PUT"])
 def setprinter(_, target):
     return JsonResponse(services.setprintertarget(target))
 
-@server.route("/printer/serial/settings", methods=['PUT'])
+@server.route("/printer/serial/settings", methods=["PUT"])
 def setserial(request):
     return JsonResponse(services.setserialsettings(request.data))
 
-@server.route("/printer/serial/flow", methods=['PUT'])
+@server.route("/printer/serial/flow", methods=["PUT"])
 def setserialflow(request):
-    response = services.setserialflow(request.data['hardware'], request.data['software'], request.data['delayms'])
+    response = services.setserialflow(request.data["hardware"], request.data["software"], request.data["delayms"])
     return JsonResponse(response)
 
-@server.route("/printer/network/address/<value>", methods=['PUT'])
+@server.route("/printer/network/address", methods=["GET"])
+def getprinteraddress(_):
+    return JsonResponse(services.getprinteraddress())
+
+@server.route("/printer/network/address/<value>", methods=["PUT"])
 def setprinteraddress(_, value):
     return JsonResponse(services.setprinteraddress(value))
 
@@ -160,16 +151,30 @@ def getcardinfo(_):
 
 @server.catchall()
 def catchall(request):
-    if (request.method == 'OPTIONS'):
+    if (request.method == "OPTIONS"):
         return JsonResponse({})
+    contenttype = request.headers.get("content-type")
+    if contenttype == "application/json":
+        return JsonResponse({
+            "error": "Endpoint not found"
+        }, status=404)
     return redirect(f"http://{request.headers['host']}/index.html")
 
 @server.exception()
-def exception(_, ex):
-    return JsonResponse({
-        "error": "Request failed",
-        "cause": str(ex)
-    }, status=500)
+def exception(request, ex):
+    if type(ex) is BadRequest:
+        status = 400
+    else:
+        status = 500
+        logexception(ex)
+    accepttype = request.headers.get("accept")
+    if accepttype == "application/json":
+        return JsonResponse({
+            "error": str(ex)
+        }, status=status)
+    return Response(f"<html><body>Error: {str(ex)}</body></html>", status, headers={
+        "Content-Type": "text/html"
+        })
 
 # async version of phew's connect_to_wifi
 async def connect_to_wifi(ssid, password, timeout_seconds=15):

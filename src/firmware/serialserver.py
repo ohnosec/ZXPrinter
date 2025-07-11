@@ -56,6 +56,10 @@ async def copyprintout(params):
 async def joinprintout(params):
     return services.copy_printout(storename(params["fromstore"]), storename(params["tostore"]), params["names"].split("+"))
 
+@command("testprinter")
+async def testprinter(_):
+    return services.testprinter()
+
 @command("setprinter", "target")
 async def setprinter(params):
     return services.setprintertarget(params["target"])
@@ -63,6 +67,10 @@ async def setprinter(params):
 @command("setprinteraddress", "address")
 async def setprinteraddress(params):
     return services.setprinteraddress(params["address"])
+
+@command("getprinteraddress")
+async def getprinteraddress(_):
+    return services.getprinteraddress()
 
 @command("setcapture", "state")
 async def setcapture(params):

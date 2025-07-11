@@ -8,7 +8,7 @@ basepath = f"{scriptpath}/src"
 
 distrofile = "files.json"
 definition = {
-    "include": ["<>main.py", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py"],
+    "include": ["<>main.py", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py", "<firmware/>*.cap"],
     "exclude": [distrofile, "font.js", "firmware/test*.py"]
 }
 
