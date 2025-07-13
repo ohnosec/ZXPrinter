@@ -8,7 +8,7 @@ import settings
 from system import hasnetwork
 
 if hasnetwork():
-    import usocket as socket
+    import socket
 
 RAWPORT = 9100
 

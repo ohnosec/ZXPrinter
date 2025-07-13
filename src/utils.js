@@ -80,6 +80,13 @@ function createnavdropdown(element) {
     });
 }
 
+function adddropdownitem(list, text) {
+    const listitem = document.createElement("li");
+    listitem.textContent = text;
+    listitem.classList.add("dropdown-header");
+    list.appendChild(listitem);
+}
+
 function hidedropdown(dropdownbuttonname) {
     const dropdownelement = document.getElementById(dropdownbuttonname);
     bootstrap.Dropdown.getOrCreateInstance(dropdownelement).hide();
@@ -233,7 +240,7 @@ export {
     Mutex,
     Logger,
     Handler,
-    isdropdown, hidedropdown, hidedropdowns, toggledropdown, createnavdropdown,
+    isdropdown, adddropdownitem, hidedropdown, hidedropdowns, toggledropdown, createnavdropdown,
     addtooltip, updatetooltip,
     setbusystate,
     showerror, errordefs, ShowError

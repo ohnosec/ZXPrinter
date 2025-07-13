@@ -28,7 +28,8 @@ class BadRequest(Exception):
 def addstaticroute(filename):
     # maxage = 120    # 2 minutes
     maxage = 10800  # 3 hours
-    handler = lambda _: FileResponse(f"/{filename}", headers={"Cache-Control": f"max-age={maxage}"})
+    async def handler(_):
+        return FileResponse(f"/{filename}", headers={"Cache-Control": f"max-age={maxage}"})
     server.add_route(f"/{filename}", handler)
 
 def initialize(p):
@@ -51,30 +52,30 @@ def initialize(p):
     wlan.active(True)
 
 @server.route("/local.js")
-def local(_):
+async def local(_):
     return JsonResponse(render_template("/local.js", local="true"), content="text/javascript")
 
 def storename(store):
     return store if store == fileprinter.SDSTORENAME else None
 
 @server.route("/printouts/<store>")
-def printouts(_, store):
+async def printouts(_, store):
     return JsonResponse(services.get_printouts(storename(store)))
 
 @server.route("/printouts/<store>/<name>")
-def printout(_, store, name):
+async def printout(_, store, name):
     return JsonResponse(services.get_printout(storename(store), name))
 
 @server.route("/printouts/<store>/<name>", methods=["DELETE"])
-def printoutdel(_, store, name):
+async def printoutdel(_, store, name):
     return JsonResponse(services.delete_printout(storename(store), name))
 
 @server.route("/printouts/<store>/<name>/printer", methods=["PUT", "POST"])
-def printoutprint(_, store, name):
+async def printoutprint(_, store, name):
     return JsonResponse(services.print_printout(storename(store), name))
 
 @server.route("/printouts/<target_store>", methods=["POST"])
-def printoutcopy(request, target_store):
+async def printoutcopy(request, target_store):
     target_parts = request.path.split("/")
     sources = request.data.get("source")
     if isinstance(sources, str):
@@ -93,60 +94,67 @@ def printoutcopy(request, target_store):
     return JsonResponse(services.copy_printout(storename(source_store), storename(target_store), source_names))
 
 @server.route("/printer/capture/<state>", methods=["PUT"])
-def setcapture(_, state):
+async def setcapture(_, state):
     return JsonResponse(services.setprintercapture(state))
 
 @server.route("/printer/endofline/<char>", methods=["PUT"])
-def setendofline(_, char):
+async def setendofline(_, char):
     return JsonResponse(services.setprinterendofline(char))
 
 @server.route("/printer/endofprint/<char>", methods=["PUT"])
-def setendofprint(_, char):
+async def setendofprint(_, char):
     return JsonResponse(services.setprinterendofprint(char))
 
 @server.route("/printer/leftmargin/<value>", methods=["PUT"])
-def setleftmargin(_, value):
+async def setleftmargin(_, value):
     return JsonResponse(services.setprinterleftmargin(int(value)))
 
 @server.route("/printer/density/<value>", methods=["PUT"])
-def setdensity(_, value):
+async def setdensity(_, value):
     return JsonResponse(services.setprinterdensity(int(value)))
 
 @server.route("/printer/test", methods=["POST"])
-def testprinter(_):
+async def testprinter(_):
     return JsonResponse(services.testprinter())
 
+@server.route("/printer", methods=["GET"])
+async def findprinters(request):
+    protocol = request.query.get("protocol")
+    print(f"protocol={protocol}")
+    printers = await services.findprinters(protocol)
+    return JsonResponse(printers)
+
 @server.route("/printer/<target>", methods=["PUT"])
-def setprinter(_, target):
+async def setprinter(_, target):
     return JsonResponse(services.setprintertarget(target))
 
 @server.route("/printer/serial/settings", methods=["PUT"])
-def setserial(request):
+async def setserial(request):
     return JsonResponse(services.setserialsettings(request.data))
 
 @server.route("/printer/serial/flow", methods=["PUT"])
-def setserialflow(request):
+async def setserialflow(request):
     response = services.setserialflow(request.data["hardware"], request.data["software"], request.data["delayms"])
     return JsonResponse(response)
 
 @server.route("/printer/network/address", methods=["GET"])
-def getprinteraddress(_):
+async def getprinteraddress(_):
     return JsonResponse(services.getprinteraddress())
 
 @server.route("/printer/network/address/<value>", methods=["PUT"])
-def setprinteraddress(_, value):
+async def setprinteraddress(_, value):
     return JsonResponse(services.setprinteraddress(value))
 
 @server.route("/log")
-def getlog(_):
+async def getlog(_):
     return JsonResponse(services.getlogfile())
 
 @server.route("/sd")
-def sdcard(_):
+async def sdcard(_):
     return JsonResponse(services.getcardinfo())
 
 @server.route("/about")
-def getcardinfo(_):
+async def getcardinfo(_):
     return JsonResponse(services.about())
 
 @server.catchall()

@@ -23,6 +23,12 @@ const requests = {
       command: "testprinter",
       paramnames: []
     },
+    findprinters: {
+      route: "printer",
+      method: "GET",
+      command: "findprinters",
+      paramnames: ["protocol"]
+    },
     setendofline: {
         route: "printer/endofline/{char}",
         method: "PUT",
@@ -191,14 +197,20 @@ async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
     userCancelController = new AbortController();
     let body = request.body && typeof request.body !== "function" ? structuredClone(request.body) : {};
     let path = request.route;
+    let querystrings = [];
     for(const paramname of request.paramnames) {
       if (request.route.includes(`{${paramname}}`)) {
         path = path.replace(`{${paramname}}`, params[paramname]);
       } else {
-        if (!request.body) {
+        if (request.method === "GET") {
+            querystrings.push(`${paramname}=${encodeURIComponent(params[paramname])}`)
+        } else if (!request.body) {
             body[paramname] = params[paramname];
         }
       }
+    }
+    if (querystrings.length > 0) {
+        path += `?${querystrings.join("&")}`
     }
     if (request.body) {
         if (typeof request.body === "function") {

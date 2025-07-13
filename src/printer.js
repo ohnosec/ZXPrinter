@@ -1,7 +1,6 @@
+import { adddropdownitem } from "./utils.js"
 import { execrequest, requests } from "./client.js"
 import { changegallerytarget } from "./gallery.js"
-
-let firsttime = true;
 
 async function setprinterenable(enabled) {
     const galleryprints = document.querySelectorAll("#gallerytarget label");
@@ -13,12 +12,6 @@ async function setprinterenable(enabled) {
         printersettings.show();
         printertest.classList.remove("d-none");
         changeprintertarget();
-        if (firsttime) {
-            firsttime = false;
-            const printerresponse = await execrequest(requests.getprinteraddress);
-            const printeraddress = document.getElementById("printeraddress");
-            printeraddress.value = printerresponse.address ?? "";
-        }
     } else {
         for(const galleryprint of galleryprints) {
             galleryprint.classList.add("disabled");
@@ -33,6 +26,38 @@ async function setprinterenable(enabled) {
 
 async function testprinter() {
     await execrequest(requests.testprinter)
+}
+
+// TODO: this is the same as network.networkscan, refactor!
+async function findprinters() {
+    const addresslistelement = document.getElementById("printeraddresslist");
+    const addresselement = document.getElementById("printeraddress");
+
+    addresslistelement.replaceChildren();
+    adddropdownitem(addresslistelement, "Searching...");
+    const printers = (await execrequest(requests.findprinters, { protocol: "raw" })).filter(
+        p => p.pdl.includes('application/vnd.epson.escpr')
+    );
+    addresslistelement.replaceChildren();
+    if (printers.length === 0) {
+        adddropdownitem(addresslistelement, "No printers");
+    } else {
+        printers.sort((a,b) => a.address.localeCompare(b.address));
+        printers.forEach((item) => {
+            const addresstemplate = document.createElement("template");
+            addresstemplate.innerHTML = item.address.link("#");
+            const addresslink = addresstemplate.content.firstChild;
+            addresslink.onclick = async (el) => {
+                const address = el.currentTarget.textContent;
+                addresselement.value = address;
+                await setaddress(address)
+            };
+            addresslink.classList.add("dropdown-item");
+            const listitem = document.createElement("li");
+            listitem.appendChild(addresslink);
+            addresslistelement.appendChild(listitem);
+        });
+    }
 }
 
 async function changeendofline() {
@@ -70,6 +95,9 @@ async function changeprintertarget() {
 
     if (target.toLowerCase() == "network") {
         networksettings.show();
+        const printerresponse = await execrequest(requests.getprinteraddress);
+        const printeraddress = document.getElementById("printeraddress");
+        printeraddress.value = printerresponse.address ?? "";
     } else {
         networksettings.hide();
     }
@@ -123,10 +151,14 @@ async function changeserial() {
     });
 }
 
+async function setaddress(address) {
+    await execrequest(requests.setprinteraddress, {address:address});
+}
+
 async function changeaddress(event) {
     const address = event.target.value.trim();
 
-    await execrequest(requests.setprinteraddress, {address:address});
+    await setaddress(address);
 }
 
 const prtbaud = document.getElementById("printerbaud");
@@ -180,6 +212,11 @@ printeropt.addEventListener("show.bs.collapse", async (event) => {
             serialoptions.hide();
             break;
     }
+});
+
+const addressdropelement = document.getElementById("printeraddressdrop");
+addressdropelement.addEventListener("show.bs.dropdown", async () => {
+    await findprinters();
 });
 
 document.getElementById("printereol").addEventListener("change", changeendofline);

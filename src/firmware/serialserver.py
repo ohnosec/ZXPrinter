@@ -60,6 +60,10 @@ async def joinprintout(params):
 async def testprinter(_):
     return services.testprinter()
 
+@command("findprinters", "protocol")
+async def findprinters(params):
+    return await services.findprinters(params["protocol"])
+
 @command("setprinter", "target")
 async def setprinter(params):
     return services.setprintertarget(params["target"])

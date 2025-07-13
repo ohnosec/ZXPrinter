@@ -344,7 +344,7 @@ async def _handle_request(reader, writer):
       await writer.wait_closed()
       return
     try:
-      response = route.call_handler(request)
+      response = await route.call_handler(request)
     except Exception as e:
       if exception_handler:
         response = exception_handler(request, e)

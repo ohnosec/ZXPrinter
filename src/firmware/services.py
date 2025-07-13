@@ -8,6 +8,7 @@ import networkprinter
 import fileprinter
 import physicalprinter
 import settings
+import dnsclient
 from system import hasnetwork
 
 testprinterfilename = const("/testprintout.cap")
@@ -75,6 +76,24 @@ def testprinter():
     logging.info(f"Printing a test page")
     server.loop.create_task(physicalprinter.printfile(testprinterfilename))
     return {}
+
+async def findprinters(protocol):
+    if protocol.lower() != "raw":
+        raise ValueError(f"Protocol '{protocol}' not supported")
+    logging.info(f"Finding {protocol} printers")
+    responses = await dnsclient.query(dnsclient.PTRTYPE, "_pdl-datastream._tcp.local")
+    addresses = []
+    for response in responses:
+        target = next((s["target"] for s in response["srv"]), None)
+        txtty = next((t["value"] for t in response["txt"] if t["name"] == "ty"), None)
+        txtpdl = next((t["value"] for t in response["txt"] if t["name"] == "pdl"), None)
+        logging.info(f"Found {protocol} printer '{txtty}' at '{target}' handling {txtpdl}")
+        addresses.append({
+            "address": target,
+            "type": txtty,
+            "pdl": txtpdl
+        })
+    return addresses
 
 def setprintercapture(state):
     logging.info(f"Changing printer capture to {state}")

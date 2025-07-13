@@ -327,3 +327,13 @@
 input[type="range"] {
     cursor: pointer;
 }
+
+#printeraddressdrop {
+    background-color: rgb(255, 255, 255);
+    color: black;
+}
+
+#printeraddressdrop:focus {
+    background-color: rgb(65, 118, 198);
+    color: black;
+}

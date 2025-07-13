@@ -1,4 +1,4 @@
-import { sleep, createnavdropdown, hidedropdown, toggledropdown, hidedropdowns, showerror, errordefs } from "./utils.js"
+import { sleep, createnavdropdown, adddropdownitem, hidedropdown, toggledropdown, hidedropdowns, showerror, errordefs } from "./utils.js"
 import * as command from "./command.js"
 import * as serial from "./serial.js"
 import { ishttpallowed } from "./client.js"
@@ -48,13 +48,6 @@ function networkupdate(status) {
         networkaddresscopyelement.disabled = true;
     }
     networkopenelement.disabled = !(status.connected && status.ip)
-}
-
-function adddropdownitem(list, text) {
-    const listitem = document.createElement("li");
-    listitem.textContent = text;
-    listitem.classList.add("dropdown-header");
-    list.appendChild(listitem);
 }
 
 function networkopen() {
