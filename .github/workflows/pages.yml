@@ -49,8 +49,8 @@ jobs:
 
       - name: Build
         run: |
-          python build.py
           python deploy.py
+          python build.py
 
       - name: Get current date
         id: date

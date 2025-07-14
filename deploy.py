@@ -21,7 +21,7 @@ template = r'''
       }}
     </script>'''
 
-imports = ",\n          ".join([f'"./{file}": "./{file}?v{timestamp}"' for file in files])
+imports = ",\n          ".join([f'"./{file}": "./{file}?v={timestamp}"' for file in files])
 
 importmap = template.format(imports=imports.lstrip()).lstrip()
 
