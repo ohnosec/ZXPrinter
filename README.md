@@ -12,6 +12,27 @@ The Pico ZX Printer replaces the ZX Printer or TS2040 printer. It's an emulator 
 
 In association with [TimexSinclair.com](https://timexsinclair.com/) and in collaboration with the TS-Team.
 
+## 🔦 What does it do?
+The Pico ZX Printer captures printouts from your Sinclair/Timex computer and stores them internally. These printouts can then be viewed, downloaded, and printed from your PC using a web app. The printouts can also be copied to an SD card for long term storage or transfer.
+
+As well as the basic function of capturing printouts from your Sinclair/Timex computer, it also supports direct printing without any host PC. A printer can be connected to the Pico ZX Printer with a serial or parallel cable. Or it can print over the network to a network enabled printer. This makes it completley standalone and a direct replacement for a ZX Printer or TS2040 printer.
+
+### List of features:
+
+- View printouts in a web browser
+- Print to a printer on your PC from the web browser
+- Print to a serial or parallel printer with support for:
+  - Epson compatible dot matrix printer
+  - Thermal receipt printer
+- Print to a network printer with support for:
+  - Epson inkjet printer
+- Download printouts as image files in PNG, JPEG, or BMP format
+- Converts printouts to text
+- Converts printouts of program listings (LLIST) to ZMakebas
+- Can be connected over USB, or without cables, over a WIFI network
+- Store and manage printouts on an SD card
+- Self-host the web app on the Pico ZX Printer, or your PC
+
 ## 🔧 Getting started
 The Pico ZX Printer is made up of two parts, the web app, and the backend that runs on the Pico ZX Printer board.
 
@@ -65,29 +86,10 @@ Then on the Raspberry Pi Pico:
 3. Copy the UF2 file onto the RPI-RP2 volume
 </details>
 
-## 🔦 What does it do?
-The Pico ZX Printer captures printouts from your Sinclair/Timex computer and stores them internally. These printouts can then be viewed, downloaded, and printed from your PC using a web app. The printouts can also be copied to an SD card for long term storage or transfer.
-
-As well as the basic function of capturing printouts from your Sinclair/Timex computer, it also supports direct printing to dot matrix printers without any host PC. A dot matrix printer can be connected to the Pico ZX Printer directly over a serial or parallel cable.
-
-### List of features:
-
-- View printouts in a web browser
-- Print to a printer on your PC from the web browser
-- Print to a serial or parallel printer with support for:
-  - Epson compatible dot matrix printer
-  - Thermal receipt printer
-- Print to a network printer with support for:
-  - Epson inkjet printer
-- Download printouts as image files in PNG, JPEG, or BMP format
-- Converts printouts to text
-- Converts printouts of program listings (LLIST) to ZMakebas
-- Can be connected over USB, or without cables, over a WIFI network
-- Store and manage printouts on an SD card
-- Self-host the web app on the Pico ZX Printer, or your PC
-
 ## ⚙️ How does it work?
 Unlike other ZX printer alternatives back in the day, the Pico ZX Printer doesn't replace the internal ROM of the Sinclair/Timex computer. Instead it uses the existing printer functionality built-in to the Sinclair/Timex computer by emulating the protocol of the ZX Printer.
+
+The code that runs on the ZX Printer is written in [MicroPython](https://micropython.org/). Most of the hardware interfacing uses the Pi Pico's Programmable I/O (PIO). This combined with Direct Memory Access (DMA) takes the real-time load off the Python code. The Python code runs multiple tasks, like the print capture, web server, and serial server, using [asyncio](https://docs.python.org/3/library/asyncio.html) coroutines.
 
 ## 🚫 Does anything not work as expected?
 
