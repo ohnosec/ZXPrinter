@@ -87,12 +87,15 @@ async def findprinters(protocol):
         target = next((s["target"] for s in response["srv"]), None)
         txtty = next((t["value"] for t in response["txt"] if t["name"] == "ty"), None)
         txtpdl = next((t["value"] for t in response["txt"] if t["name"] == "pdl"), None)
-        logging.info(f"Found {protocol} printer '{txtty}' at '{target}' handling {txtpdl}")
-        addresses.append({
-            "address": target,
-            "type": txtty,
-            "pdl": txtpdl
-        })
+        if target is None or txtty is None or txtpdl is None:
+            logging.info(f"Found {protocol} printer but missing some details: {response}")
+        else:
+            logging.info(f"Found {protocol} printer '{txtty}' at '{target}' handling {txtpdl}")
+            addresses.append({
+                "address": target,
+                "type": txtty,
+                "pdl": txtpdl
+            })
     return addresses
 
 def setprintercapture(state):

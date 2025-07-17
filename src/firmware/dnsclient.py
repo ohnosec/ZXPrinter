@@ -141,11 +141,17 @@ def parseresponse(response, queryid, querytype):
             addrecord(records, "ptr", { "name": name })
         elif rtype == TXTTYPE:
             txtpos = pos
+            txtindex = 0
             while txtpos < pos+rdlength:
                 txt, txtpos = parsestring(response, txtpos)
-                valuepos = txt.index("=")
-                name = txt[:valuepos]
-                value = txt[valuepos+1:]
+                valuepos = txt.find("=")
+                if valuepos <= 0:
+                    name = f"txt[{txtindex}]"
+                    value = txt
+                    txtindex += 1
+                else:
+                    name = txt[:valuepos]
+                    value = txt[valuepos+1:]
                 if name == "pdl":
                     value = value.split(",")
                 # print(f"TXT: {name}: {value}")
