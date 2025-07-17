@@ -6,6 +6,7 @@ from phew import logging
 import physicalprinter
 import settings
 from system import hasnetwork
+from bitmap import packbits_encode
 
 if hasnetwork():
     import socket
@@ -76,7 +77,8 @@ paper = LETTER          # media size: LETTER
 margin = (3, 3, 3, 3)   # 3mm borders
 dpi = const(360)        # 360dpi
 pd = const(0x00)        # page direction: bidirectional
-cmode = const(0)        # not compressed
+# cmode = const(0)        # not compressed
+cmode = const(1)        # compressed
 
 scale = const(6)        # 6x
 leftedge = const(30)    # x position
@@ -102,6 +104,12 @@ def toir(dpi):
 class EscprProtocol(physicalprinter.Protocol):
     def __init__(self):
         self.line = bytearray(physicalprinter.linebytes*8*scale)
+        self.compressedline = bytearray(len(self.line)*2)
+        self.compressedlinemv = memoryview(self.compressedline)
+
+    def compress(self):
+        length = packbits_encode(self.line, len(self.line), self.compressedline)
+        return self.compressedlinemv[:length]
 
     async def begin(self):
         await self.write(b"\x00\x00\x00\x1b\x01@EJL 1284.4\n@EJL     \n")   # exit packet mode
@@ -154,8 +162,11 @@ class EscprProtocol(physicalprinter.Protocol):
                     else:
                         self.line[column+0] = 0x00
                     column += 1
+
+        line = self.compress()
+
         for _ in range(scale): # yscale
-            await self.writeline(self.line, leftedge, self.y)
+            await self.writeline(line, leftedge, self.y)
             self.y += 1
 
     async def end(self):
