@@ -5,6 +5,7 @@ import asyncio
 import time
 import socket
 from utils import setbytes, setbyte, setword
+from asyncudp import AsyncUdp
 
 MDNSPORT    = const(5353)
 ADDRESS     = const("224.0.0.251")
@@ -175,27 +176,22 @@ def parseresponse(response, queryid, querytype):
 
     return records
 
-async def query(querytype, name, timeout=2000):
+async def query(querytype, name, timeout=1000):
     if not name.endswith(".local"):
         raise ValueError("Only local names are currently supported")
     responses = []
     try:
+        udp = AsyncUdp()
         address = socket.getaddrinfo(ADDRESS, MDNSPORT)[0][-1]
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setblocking(False)
         query, queryid = buildquery(name, querytype)
-        _ = sock.sendto(query, address)
-        starttime = time.ticks_ms()
-        while time.ticks_diff(time.ticks_ms(), starttime) < timeout:
-            try:
-                response, _ = sock.recvfrom(1024)
-                responses.append(parseresponse(response, queryid, querytype))
-            except OSError as ex:
-                if ex.errno != errno.EAGAIN:
-                    raise ex
-            await asyncio.sleep_ms(10)
+        _ = udp.sendto(query, address)
+        while True:
+            response, _ = await udp.recvfrom(1024, timeout)
+            if response is None:
+                break
+            responses.append(parseresponse(response, queryid, querytype))
     finally:
-        sock.close()
+        udp.close()
     return responses
 
 if __name__ == "__main__":
