@@ -325,12 +325,19 @@ def bitmap_to_pwg(bufin, bufout, scale):
     return bitmaptobytemap(bufin, len(bufin), bufout, array.array('B', [0xFF, 0x00, scale]))
 
 if __name__ == '__main__':
-    buf = b'AB'*50
-    # buf = bytearray(range(129))
-    # buf = bytearray(range(16))
-    # buf = bytearray(range(129))+b'\x80\x80'+bytearray(range(1))
-    rlebuf = bytearray(2000)
-    rlelen = pwgrle_encode(buf, len(buf), rlebuf)
-    print(rlelen)
-    rleout = rlebuf[:rlelen]
-    print(rleout)
+    # buf = b'AB'*50
+    # # buf = bytearray(range(129))
+    # # buf = bytearray(range(16))
+    # # buf = bytearray(range(129))+b'\x80\x80'+bytearray(range(1))
+    # rlebuf = bytearray(2000)
+    # rlelen = pwgrle_encode(buf, len(buf), rlebuf)
+    # print(rlelen)
+    # rleout = rlebuf[:rlelen]
+    # print(rleout)
+
+    b2bbuf = bytearray(2000)
+    buf = b'\x0f\x10'
+    b2blen = bitmap_to_escpr(buf, b2bbuf, 2)
+    b2bout = b2bbuf[:b2blen]
+    print(b2bout)
+

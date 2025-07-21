@@ -6,7 +6,7 @@ from phew import logging
 import physicalprinter
 import settings
 from system import hasnetwork
-from bitmap import packbits_encode
+from bitmap import packbits_encode, bitmap_to_escpr
 
 if hasnetwork():
     import socket
@@ -107,8 +107,8 @@ class EscprProtocol(physicalprinter.Protocol):
         self.compressedline = bytearray(len(self.line)*2)
         self.compressedlinemv = memoryview(self.compressedline)
 
-    def compress(self):
-        length = packbits_encode(self.line, len(self.line), self.compressedline)
+    def compress(self, linelen):
+        length = packbits_encode(self.line, linelen, self.compressedline)
         return self.compressedlinemv[:length]
 
     async def begin(self):
@@ -153,18 +153,8 @@ class EscprProtocol(physicalprinter.Protocol):
         await self.write(line)
 
     async def writerow(self, rowbuffer):
-        column = 0
-        for byte in rowbuffer:
-            for bit in bytes(range(7, -1, -1)):
-                for _ in range(scale): # xscale
-                    if byte & (1<<bit) == 0:
-                        self.line[column+0] = 0x01
-                    else:
-                        self.line[column+0] = 0x00
-                    column += 1
-
-        line = self.compress()
-
+        linelen = bitmap_to_escpr(rowbuffer, self.line, scale)
+        line = self.compress(linelen)
         for _ in range(scale): # yscale
             await self.writeline(line, leftedge, self.y)
             self.y += 1
