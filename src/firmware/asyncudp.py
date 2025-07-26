@@ -2,7 +2,7 @@ import asyncio
 import socket
 from socket import AF_INET, SOCK_DGRAM
 
-class AsyncUdp:
+class Client:
     def __init__(self):
         self.socket = socket.socket(AF_INET, SOCK_DGRAM)
         self.socket.setblocking(False)

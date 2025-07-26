@@ -1,32 +1,31 @@
 from micropython import const
 from uctypes import addressof
-import os, errno
+import os
 import asyncio
-import time
 import socket
+import asyncudp
 from utils import setbytes, setbyte, setword
-from asyncudp import AsyncUdp
 
-MDNSPORT    = const(5353)
-ADDRESS     = const("224.0.0.251")
+MDNSPORT            = const(5353)
+MULTICASTADDRESS    = const("224.0.0.251")
 
-INCLASS     = const(1)      # the internet class
+INCLASS             = const(1)      # the internet class
 
-ATYPE       = const(1)      # IPv4
-AAAATYPE    = const(28)     # IPv6
-PTRTYPE     = const(12)
-TXTTYPE     = const(16)
-SRVTYPE     = const(33)
+ATYPE               = const(1)      # IPv4
+AAAATYPE            = const(28)     # IPv6
+PTRTYPE             = const(12)
+TXTTYPE             = const(16)
+SRVTYPE             = const(33)
 
-IDLEN       = const(2)      # ID
-BITSLEN     = const(2)      # QR, OPCODE, AA, TC, RD, RA, Z, RCODE
-COUNTLEN    = const(8)      # QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT
-NAMELEN     = const(2)      # QNAME length + null terminator
-TYPELEN     = const(2)      # QTYPE
-CLASSLEN    = const(2)      # QCLASS
+IDLEN               = const(2)      # ID
+BITSLEN             = const(2)      # QR, OPCODE, AA, TC, RD, RA, Z, RCODE
+COUNTLEN            = const(8)      # QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT
+NAMELEN             = const(2)      # QNAME length + null terminator
+TYPELEN             = const(2)      # QTYPE
+CLASSLEN            = const(2)      # QCLASS
 
-QRYMINLEN   = const(IDLEN+BITSLEN+COUNTLEN+NAMELEN+TYPELEN+CLASSLEN)
-RSPMINLEN   = const(IDLEN+BITSLEN+COUNTLEN)
+QRYMINLEN           = const(IDLEN+BITSLEN+COUNTLEN+NAMELEN+TYPELEN+CLASSLEN)
+RSPMINLEN           = const(IDLEN+BITSLEN+COUNTLEN)
 
 def buildquery(host, qtype):
     host = host.encode()
@@ -181,17 +180,17 @@ async def query(querytype, name, timeout=1000):
         raise ValueError("Only local names are currently supported")
     responses = []
     try:
-        udp = AsyncUdp()
-        address = socket.getaddrinfo(ADDRESS, MDNSPORT)[0][-1]
+        client = asyncudp.Client()
+        address = socket.getaddrinfo(MULTICASTADDRESS, MDNSPORT)[0][-1]
         query, queryid = buildquery(name, querytype)
-        _ = udp.sendto(query, address)
+        _ = client.sendto(query, address)
         while True:
-            response, _ = await udp.recvfrom(1024, timeout)
+            response, _ = await client.recvfrom(1024, timeout)
             if response is None:
                 break
             responses.append(parseresponse(response, queryid, querytype))
     finally:
-        udp.close()
+        client.close()
     return responses
 
 if __name__ == "__main__":
