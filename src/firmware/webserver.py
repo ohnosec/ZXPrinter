@@ -128,6 +128,10 @@ async def findprinters(request):
 async def setprinter(_, target):
     return JsonResponse(services.setprintertarget(target))
 
+@server.route("/printer/target", methods=["GET"])
+async def getprinter(_):
+    return JsonResponse(services.getprinter())
+
 @server.route("/printer/serial/settings", methods=["PUT"])
 async def setserial(request):
     return JsonResponse(services.setserialsettings(request.data))
@@ -144,6 +148,14 @@ async def getprinteraddress(_):
 @server.route("/printer/network/address/<value>", methods=["PUT"])
 async def setprinteraddress(_, value):
     return JsonResponse(services.setprinteraddress(value))
+
+@server.route("/printer/protocol", methods=["GET"])
+async def getprinterprotocol(_):
+    return JsonResponse(services.getprinterprotocol())
+
+@server.route("/printer/protocol/<value>", methods=["PUT"])
+async def setprinterprotocol(_, value):
+    return JsonResponse(services.setprinterprotocol(value))
 
 @server.route("/log")
 async def getlog(_):

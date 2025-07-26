@@ -42,11 +42,6 @@ class SerialPort(physicalprinter.Port):
 
 serialport = SerialPort()
 
-def setactive():
-    physicalprinter.resetprotocol()
-    physicalprinter.setport(serialport)
-    physicalprinter.setenabled(True)
-
 def setsettings(baudrate, bits, parity, stop):
     parityvalue = 0 if parity=='even' else 1 if parity=='odd' else None
     port.init(baudrate=baudrate, bits=bits, parity=parityvalue, stop=stop)
@@ -63,3 +58,11 @@ def setflowcontrol(hardware, software, delayms):
 
     interchardelayms = delayms
     stopped = False
+
+def setdefaultprotocol():
+    physicalprinter.setprotocolescp()
+
+def setactive():
+    setdefaultprotocol()
+    physicalprinter.setport(serialport)
+    physicalprinter.setenabled(True)

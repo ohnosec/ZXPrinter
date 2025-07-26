@@ -235,6 +235,8 @@ function showerror(errordef, message, error) {
     }
 }
 
+const menuactiveevent = new Event("active");
+
 export {
     sleep,
     Mutex,
@@ -243,5 +245,6 @@ export {
     isdropdown, adddropdownitem, hidedropdown, hidedropdowns, toggledropdown, createnavdropdown,
     addtooltip, updatetooltip,
     setbusystate,
-    showerror, errordefs, ShowError
+    showerror, errordefs, ShowError,
+    menuactiveevent
 }

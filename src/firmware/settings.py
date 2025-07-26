@@ -1,18 +1,22 @@
 import json
 from micropython import const
 
-SETTINGSFILE =   const("/settings.json")
+SETTINGSFILE    = const("/settings.json")
 
-HOSTNAME =       const("hostname")
-SSID =           const("ssid")
-PASSWORD =       const("password")
-PRINTERADDRESS = const("printeraddress")
+HOSTNAME        = const("hostname")
+SSID            = const("ssid")
+PASSWORD        = const("password")
+PRINTERADDRESS  = const("printeraddress")
+PRINTERTARGET   = const("printertarget")
+PRINTERPROTOCOL = const("printerprotocol")
 
 settings = {
     HOSTNAME: "zxprinter",
     SSID: "",
     PASSWORD: "",
-    PRINTERADDRESS: None
+    PRINTERADDRESS: None,
+    PRINTERTARGET: None,
+    PRINTERPROTOCOL: None
 }
 
 def initialize():
@@ -53,6 +57,16 @@ def getprinteraddress():
 
     return settings.get(PRINTERADDRESS)
 
+def getprintertarget():
+    global settings
+
+    return settings.get(PRINTERTARGET)
+
+def getprinterprotocol():
+    global settings
+
+    return settings.get(PRINTERPROTOCOL)
+
 def sethostname(hostname):
     global settings
 
@@ -72,3 +86,13 @@ def setprinteraddress(address):
     global settings
 
     settings[PRINTERADDRESS] = address
+
+def setprintertarget(target):
+    global settings
+
+    settings[PRINTERTARGET] = target
+
+def setprinterprotocol(protocol):
+    global settings
+
+    settings[PRINTERPROTOCOL] = protocol

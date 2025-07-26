@@ -5,7 +5,7 @@ export * from "./install.js"
 export * from "./cloud.js"
 export * from "./printer.js"
 
-import { isdropdown, hidedropdowns, addtooltip, updatetooltip } from "./utils.js"
+import { isdropdown, hidedropdowns, addtooltip, updatetooltip, menuactiveevent } from "./utils.js"
 import * as settings from "./settings.js"
 
 const TOOLTIPSTATENAME = "showtooltip";
@@ -55,6 +55,9 @@ function setupmenu(element) {
                     content.classList.remove("active");
                 }
             };
+
+            menu.dispatchEvent(menuactiveevent);
+
             return false;
         });
     };

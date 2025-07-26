@@ -131,13 +131,25 @@ def setprintertarget(target):
     target = target.lower()
     if target == "off":
         physicalprinter.setenabled(False)
+        target = None
     elif target == "serial":
         serialprinter.setactive()
     elif target == "parallel":
         parallelprinter.setactive()
     elif target == "network":
         networkprinter.setactive()
+    settings.setprintertarget(target)
+    settings.save()
+    protocol = settings.getprinterprotocol()
+    if protocol is not None:
+        setprinterprotocol(protocol)
     return {}
+
+def getprinter():
+    target = settings.getprintertarget()
+    return {
+        "target": "off" if target is None else target
+    }
 
 def setprinteraddress(address):
     logging.info(f"Setting printer address to {address}")
@@ -149,6 +161,32 @@ def setprinteraddress(address):
 def getprinteraddress():
     return {
         "address": networkprinter.getaddress()
+    }
+
+def setprinterprotocol(protocol):
+    logging.info(f"Setting printer protocol to {protocol}")
+    protocol = protocol.lower()
+    if protocol == "auto":
+        target = settings.getprintertarget()
+        if target == "serial":
+            serialprinter.setdefaultprotocol()
+        elif target == "parallel":
+            parallelprinter.setdefaultprotocol()
+        elif target == "network":
+            networkprinter.setdefaultprotocol()
+        protocol = None
+    elif protocol == "escp":
+        physicalprinter.setprotocolescp()
+    elif protocol == "escpr":
+        networkprinter.setprotocolescpr()
+    settings.setprinterprotocol(protocol)
+    settings.save()
+    return {}
+
+def getprinterprotocol():
+    protocol = settings.getprinterprotocol()
+    return {
+        "protocol": "auto" if protocol is None else protocol
     }
 
 def setserialsettings(settings):

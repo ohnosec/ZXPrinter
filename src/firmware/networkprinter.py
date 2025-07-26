@@ -168,7 +168,13 @@ class EscprProtocol(physicalprinter.Protocol):
 escpprotocol = EscprProtocol()
 setaddress(settings.getprinteraddress())
 
-def setactive():
+def setprotocolescpr():
     physicalprinter.setprotocol(escpprotocol)
+
+def setdefaultprotocol():
+    setprotocolescpr()
+
+def setactive():
+    setdefaultprotocol()
     physicalprinter.setport(networkport)
     physicalprinter.setenabled(True)

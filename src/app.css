@@ -328,12 +328,12 @@ input[type="range"] {
     cursor: pointer;
 }
 
-#printeraddressdrop {
-    background-color: rgb(255, 255, 255);
+.menudropdown, .menudropdown:hover {
+    background-color: white;
     color: black;
 }
 
-#printeraddressdrop:focus {
+.menudropdown-check:checked+.menudropdown, .menudropdown.active, .menudropdown.show, .menudropdown:first-child:active, :not(.menudropdown-check)+.menudropdown:active {
     background-color: rgb(65, 118, 198);
     color: black;
 }

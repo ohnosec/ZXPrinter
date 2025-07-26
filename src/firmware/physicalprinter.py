@@ -151,7 +151,7 @@ def setprotocol(protocol):
 
     activeprotocol = protocol
 
-def resetprotocol():
+def setprotocolescp():
     global activeprotocol
 
     activeprotocol = escpprotocol

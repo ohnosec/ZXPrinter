@@ -68,6 +68,10 @@ async def findprinters(params):
 async def setprinter(params):
     return services.setprintertarget(params["target"])
 
+@command("getprinter")
+async def getprinter(_):
+    return services.getprinter()
+
 @command("setprinteraddress", "address")
 async def setprinteraddress(params):
     return services.setprinteraddress(params["address"])
@@ -75,6 +79,14 @@ async def setprinteraddress(params):
 @command("getprinteraddress")
 async def getprinteraddress(_):
     return services.getprinteraddress()
+
+@command("setprinterprotocol", "protocol")
+async def setprinterprotocol(params):
+    return services.setprinterprotocol(params["protocol"])
+
+@command("getprinterprotocol")
+async def getprinterprotocol(_):
+    return services.getprinterprotocol()
 
 @command("setcapture", "state")
 async def setcapture(params):

@@ -7,7 +7,10 @@ class ParallelPort(physicalprinter.Port):
 
 parallelport = ParallelPort()
 
+def setdefaultprotocol():
+    physicalprinter.setprotocolescp()
+
 def setactive():
-    physicalprinter.resetprotocol()
+    setdefaultprotocol()
     physicalprinter.setport(parallelport)
     physicalprinter.setenabled(True)

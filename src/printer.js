@@ -2,16 +2,26 @@ import { adddropdownitem } from "./utils.js"
 import { execrequest, requests } from "./client.js"
 import { changegallerytarget } from "./gallery.js"
 
-async function setprinterenable(enabled) {
+async function showprinter() {
+    const printerresponse = await execrequest(requests.getprinter);
+    const printerenabledelement = document.getElementById("printerenable");
+    const printertarget = printerresponse.target;
+    const printerenabled = printertarget !== "off";
+    printerenabledelement.checked = printerenabled;
+    refreshprinter(printerenabled);
+    refreshprintertarget(printertarget);
+}
+
+function refreshprinter(printerenabled) {
     const galleryprints = document.querySelectorAll("#gallerytarget label");
     const printertest = document.getElementById("printertest");
-    if (enabled.checked) {
+    if (printerenabled) {
         for(const galleryprint of galleryprints) {
             galleryprint.classList.remove("disabled");
         }
         printersettings.show();
         printertest.classList.remove("d-none");
-        changeprintertarget();
+        printoptions.hide();
     } else {
         for(const galleryprint of galleryprints) {
             galleryprint.classList.add("disabled");
@@ -20,6 +30,14 @@ async function setprinterenable(enabled) {
         changegallerytarget();
         printersettings.hide();
         printertest.classList.add("d-none");
+    }
+}
+
+async function setprinterenable(enabled) {
+    refreshprinter(enabled.checked);
+    if (enabled.checked) {
+        await changeprintertarget();
+    } else {
         await execrequest(requests.setprintertarget, {target:"off"});
     }
 }
@@ -28,15 +46,36 @@ async function testprinter() {
     await execrequest(requests.testprinter)
 }
 
+async function setprinterprotocol(dropdownelement) {
+    const inputelement = document.getElementById("printerlanguage");
+    inputelement.value = dropdownelement.textContent;
+    const protocol = dropdownelement.dataset.protocol;
+    await execrequest(requests.setprinterprotocol, { "protocol": protocol });
+}
+
+async function setprintercustom(customelement) {
+    const option = document.getElementById("printerlanguageoption");
+    if (customelement.checked) {
+        option.classList.remove("d-none");
+        const language = document.getElementById("printerlanguage");
+        const firstlanguage = language.parentElement.querySelector("ul > li");
+        await setprinterprotocol(firstlanguage);
+    } else {
+        option.classList.add("d-none");
+        await execrequest(requests.setprinterprotocol, { "protocol": "auto" });
+    }
+}
+
 // TODO: this is the same as network.networkscan, refactor!
 async function findprinters() {
     const addresslistelement = document.getElementById("printeraddresslist");
     const addresselement = document.getElementById("printeraddress");
+    const customelement = document.getElementById("printercustom");
 
     addresslistelement.replaceChildren();
     adddropdownitem(addresslistelement, "Searching...");
     const printers = (await execrequest(requests.findprinters, { protocol: "raw" })).filter(
-        p => p.pdl.includes('application/vnd.epson.escpr')
+        p => customelement.checked ? true : p.pdl.includes('application/vnd.epson.escpr')
     );
     addresslistelement.replaceChildren();
     if (printers.length === 0) {
@@ -84,23 +123,51 @@ async function changedotdensity() {
     await execrequest(requests.setdensity, {value:density})
 }
 
-async function changeprintertarget() {
-    const target = document.querySelector("#printertarget input[type='radio']:checked").value;
+async function refreshprintertarget(target) {
+    printoptions.hide();
 
-    if (target.toLowerCase() == "serial") {
+    if (target == "serial") {
+        const serialtarget = document.getElementById("prttgtserial");
+        serialtarget.checked = true;
         serialsettings.show();
     } else {
         serialsettings.hide();
     }
 
-    if (target.toLowerCase() == "network") {
+    if (target == "parallel") {
+        const paralleltarget = document.getElementById("prttgtparallel");
+        paralleltarget.checked = true;
+    }
+
+    if (target == "network") {
+        const networktarget = document.getElementById("prttgtnetwork");
+        networktarget.checked = true;
         networksettings.show();
-        const printerresponse = await execrequest(requests.getprinteraddress);
+        const addressresponse = await execrequest(requests.getprinteraddress);
         const printeraddress = document.getElementById("printeraddress");
-        printeraddress.value = printerresponse.address ?? "";
+        printeraddress.value = addressresponse.address ?? "";
+        const protocolresponse = await execrequest(requests.getprinterprotocol);
+        const customelement = document.getElementById("printercustom");
+        customelement.checked = protocolresponse.protocol != "auto";
+        const option = document.getElementById("printerlanguageoption");
+        if (customelement.checked) {
+            option.classList.remove("d-none");
+            const language = document.getElementById("printerlanguage");
+            const firstlanguage = language.parentElement.querySelector("ul > li");
+            const inputelement = document.getElementById("printerlanguage");
+            inputelement.value = firstlanguage.textContent;
+        } else {
+            option.classList.add("d-none");
+        }
     } else {
         networksettings.hide();
     }
+}
+
+async function changeprintertarget() {
+    const target = document.querySelector("#printertarget input[type='radio']:checked").value;
+
+    await refreshprintertarget(target.toLowerCase());
 
     await execrequest(requests.setprintertarget, {target:target})
 }
@@ -226,8 +293,11 @@ document.getElementById("dotdensity").addEventListener("change", changedotdensit
 document.getElementById("printertarget").addEventListener("change", changeprintertarget);
 document.getElementById("serialsettings").addEventListener("change", changeserial);
 document.getElementById("printeraddress").addEventListener("focusout", changeaddress)
+document.getElementById("menuprinter").addEventListener("active", showprinter)
 
 export {
     setprinterenable,
+    setprinterprotocol,
+    setprintercustom,
     testprinter
 }

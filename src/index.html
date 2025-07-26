@@ -474,11 +474,27 @@
                 </div>
                 <div id="printernetwork" class="collapse">
                   <div class="mb-3 pe-5">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="printercustom" onclick="void app.setprintercustom(this)">
+                      <label class="form-check-label" for="printercustom">Custom configuration</label>
+                    </div>
+                  </div>
+                  <div class="mb-3 pe-5">
+                    <div class="mb-3 mt-2 d-none" id="printerlanguageoption">
+                      <label for="printerlanguage" class="form-label">Printer Language</label>
+                      <div class="input-group">
+                        <input type="text" class="form-control" id="printerlanguage" placeholder="Select a language" readonly onfocus="this.blur()">
+                        <button class="btn border dropdown-toggle menudropdown" id="printerlanguagedrop" aria-expanded="false" data-bs-toggle="dropdown"></button>
+                        <ul class="dropdown-menu dropdown-menu-end" id="printerlanguagelist">
+                          <li data-protocol="escpr"><button class="dropdown-item" type="button" onclick="void app.setprinterprotocol(this)">Epson ESC/P-R</button></li>
+                        </ul>
+                      </div>
+                    </div>
                     <div class="mb-3 mt-2">
                       <label for="printeraddress" class="form-label">Address</label>
                       <div class="input-group">
-                        <input type="text" class="form-control" id="printeraddress">
-                        <button class="btn border dropdown-toggle" id="printeraddressdrop" aria-expanded="false" data-bs-toggle="dropdown"></button>
+                        <input type="text" class="form-control" id="printeraddress" onclick="this.select()">
+                        <button class="btn border dropdown-toggle menudropdown" id="printeraddressdrop" aria-expanded="false" data-bs-toggle="dropdown"></button>
                         <ul class="dropdown-menu dropdown-menu-end" id="printeraddresslist">
                         </ul>
                       </div>
@@ -592,7 +608,7 @@
               </button>
             </div>
             <div class="col col-auto ps-0 pe-0">
-              <button class="menu nav-link" data-target="menuprinter" data-bs-toggle="tooltip" data-bs-title="Printer">
+              <button id="menuprinter" class="menu nav-link" data-target="menuprinter" data-bs-toggle="tooltip" data-bs-title="Printer">
                 <i class="fs-4 bi bi-printer"></i>
               </button>
             </div>
@@ -618,7 +634,7 @@
           </div>
         </div>
         <div id="log" class="menucontent menulog col overflow-auto h-100 p-3">
-          <textarea class="form-control shadow-none border-0" id="logtext" style="resize: none;box-sizing: border-box;height: 100%;width: 100%;" readonly=""></textarea>
+          <textarea class="form-control shadow-none border-0" id="logtext" style="resize: none;box-sizing: border-box;height: 100%;width: 100%;" readonly></textarea>
         </div>
         <div id="gallery" class="col overflow-auto p-3 bodyscroll menucontent menugallery">
           <div id="prtdoc" class="row">
