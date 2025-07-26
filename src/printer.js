@@ -1,4 +1,4 @@
-import { adddropdownitem } from "./utils.js"
+import { adddropdownitem, MemoryCache } from "./utils.js"
 import { execrequest, requests } from "./client.js"
 import { changegallerytarget } from "./gallery.js"
 
@@ -66,25 +66,36 @@ async function setprintercustom(customelement) {
     }
 }
 
-// TODO: this is the same as network.networkscan, refactor!
-async function findprinters() {
+const printercache = new MemoryCache();
+
+// TODO: this is very similar to network.networkscan, refactor!
+async function findprinters(printerprotocol = "raw") {
     const addresslistelement = document.getElementById("printeraddresslist");
     const addresselement = document.getElementById("printeraddress");
     const customelement = document.getElementById("printercustom");
 
     addresslistelement.replaceChildren();
     adddropdownitem(addresslistelement, "Searching...");
-    const printers = (await execrequest(requests.findprinters, { protocol: "raw" })).filter(
-        p => customelement.checked ? true : p.pdl.includes('application/vnd.epson.escpr')
-    );
+    const printersfound = await execrequest(requests.findprinters, { protocol: printerprotocol });
+    printersfound.forEach((printer) => {
+        printercache.set(`${printerprotocol}\t${printer.address}`, printer);
+    });
+    const printers = [...printercache.items()].filter(
+        ([key, printer]) => {
+            const [protocol, ] = key.split("\t");
+            if (protocol === printerprotocol) {
+                return customelement.checked ? true : printer.pdl.includes('application/vnd.epson.escpr')
+            }
+            return false;
+        }).map(([, printer]) => printer);
     addresslistelement.replaceChildren();
     if (printers.length === 0) {
         adddropdownitem(addresslistelement, "No printers");
     } else {
         printers.sort((a,b) => a.address.localeCompare(b.address));
-        printers.forEach((item) => {
+        printers.forEach((printer) => {
             const addresstemplate = document.createElement("template");
-            addresstemplate.innerHTML = item.address.link("#");
+            addresstemplate.innerHTML = printer.address.link("#");
             const addresslink = addresstemplate.content.firstChild;
             addresslink.onclick = async (el) => {
                 const address = el.currentTarget.textContent;

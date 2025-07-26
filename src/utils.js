@@ -58,6 +58,59 @@ class Handler {
     }
 }
 
+class MemoryCache {
+    constructor(defaultAgeSeconds = 60) {
+        this.cache = new Map();
+        this.timers = new Map();
+        this.defaultAgeMilliseconds = defaultAgeSeconds * 1000;
+    }
+
+    set(key, value, ageSeconds) {
+        this.clearTimer(key);
+        this.cache.set(key, value);
+        const ageMilliseconds = (ageSeconds !== undefined) ? ageSeconds * 1000 : this.defaultAgeMilliseconds;
+        const timer = setTimeout(() => {
+            this.delete(key);
+            console.log(`Cache entry for key "${key}" aged out`);
+        }, ageMilliseconds);
+        this.timers.set(key, timer);
+    }
+
+    get(key) {
+        return this.cache.get(key);
+    }
+
+    has(key) {
+        return this.cache.has(key);
+    }
+
+    items() {
+        return this.cache;
+    }
+
+    delete(key) {
+        this.clearTimer(key);
+        return this.cache.delete(key);
+    }
+
+    clear() {
+        for (const timer of this.timers.values()) {
+            clearTimeout(timer);
+        }
+        this.cache.clear();
+        this.timers.clear();
+        console.log("Cache cleared");
+    }
+
+    clearTimer(key) {
+        const timer = this.timers.get(key);
+        if (timer) {
+            clearTimeout(timer);
+            this.timers.delete(key);
+        }
+    }
+}
+
 function isdropdown(element) {
     for( ; element && element !== document; element = element.parentElement) {
         if (element.classList.contains("dropdown")) return true;
@@ -242,6 +295,7 @@ export {
     Mutex,
     Logger,
     Handler,
+    MemoryCache,
     isdropdown, adddropdownitem, hidedropdown, hidedropdowns, toggledropdown, createnavdropdown,
     addtooltip, updatetooltip,
     setbusystate,
