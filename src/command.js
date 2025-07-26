@@ -16,7 +16,7 @@ const State = Object.freeze({
 
 const RESETSECONDS = 10;
 
-const mutex = new Mutex();
+const executemutex = new Mutex();
 
 async function getstate() {
     serial.flush();
@@ -34,7 +34,7 @@ async function getstate() {
 }
 
 async function executerepl(replaction) {
-    const release = await mutex.acquire();
+    const release = await executemutex.acquire();
     setbusystate(true);
     try {
         await repl.enter();
@@ -49,8 +49,8 @@ async function executerepl(replaction) {
 }
 
 async function execute(command, params = [], timeout = 5000) {
-    const release = await mutex.acquire();
-    if (timeout>500) setbusystate(true);
+    const release = await executemutex.acquire();
+    if (timeout > 500) setbusystate(true);
     let responsetext;
     try {
         serial.flush();
@@ -63,7 +63,7 @@ async function execute(command, params = [], timeout = 5000) {
         const responseMs = (new Date()).getTime() - startTime;
         console.log(`Command '${command}' took ${responseMs} ms`);
     } finally {
-        if (timeout>500) setbusystate(false);
+        if (timeout > 500) setbusystate(false);
         release();
     }
     try {

@@ -133,8 +133,6 @@ const requests = {
     },
 }
 
-let userCancelController = new AbortController();
-
 function isrunninglocal() {
     return islocal == "true";
 }
@@ -167,8 +165,12 @@ function setaddress(address) {
     settings.set("address", address);
 }
 
-function fetchcancel() {
-    userCancelController.abort();
+function newcanceller() {
+    return new AbortController();
+}
+
+function cancelrequest(canceller) {
+    canceller.abort();
 }
 
 function ishttpallowed() {
@@ -190,11 +192,10 @@ function replaceparams(pattern, params) {
     return value;
 }
 
-async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
+async function fetchrequest(basepath, request, params = {}, options = { timeout: 5000, canceller: undefined}) {
     if (!ishttpallowed()) {
         throw new ShowError("Secure web hosting (https) doesn't support using the web to access ZX Printer");
     }
-    userCancelController = new AbortController();
     let body = request.body && typeof request.body !== "function" ? structuredClone(request.body) : {};
     let path = request.route;
     let querystrings = [];
@@ -225,33 +226,32 @@ async function fetchrequest(basepath, request, params = {}, timeout = 5000) {
             }
         }
     }
+    const abortsignallers = [ AbortSignal.timeout(options.timeout) ];
+    if (options.canceller) abortsignallers.push(options.canceller.signal);
     const requestinit = {
       method: request.method,
       headers: { "Accept": "application/json" },
-      signal: AbortSignal.any([
-        userCancelController.signal,
-        AbortSignal.timeout(timeout)
-      ])
+      signal: AbortSignal.any(abortsignallers)
     };
     if (request.method == "POST" || request.method == "PUT") {
       requestinit["body"] = JSON.stringify(body);
       requestinit.headers["Content-Type"] = "application/json"
     }
     const startTime = (new Date()).getTime();
-    let response = await fetch(`${basepath}/${path}`, requestinit);
+    const response = await fetch(`${basepath}/${path}`, requestinit);
     const responseMs = (new Date()).getTime() - startTime;
     console.log(`Request to '${path}' took ${responseMs} ms`);
     return response;
 }
 
-async function execrequest(request, params = {}, timeout = 5000, showerrortoast = true) {
+async function execrequest(request, params = {}, options = { showerrortoast: true, timeout: 5000, cancel: undefined}) {
   try {
-    if (timeout>500) setbusystate(true);
+    if (options.timeout > 500) setbusystate(true);
     if (iscloudconnection()) {
         if (!hasaddress()) {
             throw new ShowError("The web address has not been set");
         }
-        const response = await fetchrequest(gettargetpath(), request, params, timeout);
+        const response = await fetchrequest(gettargetpath(), request, params, options);
         if (!response.ok) {
             throw new Error(`The web request was not ok (${response.status}:${response.statusText})`)
         }
@@ -264,17 +264,17 @@ async function execrequest(request, params = {}, timeout = 5000, showerrortoast 
         for (const paramname of request.paramnames) {
             cmdparams.push(params[paramname]);
         }
-        return await command.execute(request.command, cmdparams, timeout);
+        return await command.execute(request.command, cmdparams, options.timeout);
     }
   } catch(error) {
     if (error.name != "AbortError") {
-        if (showerrortoast) {
+        if (options.showerrortoast) {
             showerror(errordefs.requesterror, null, error);
         }
     }
     throw error;
   } finally {
-    if (timeout>500) setbusystate(false);
+    if (options.timeout > 500) setbusystate(false);
   }
 }
 
@@ -286,7 +286,8 @@ export {
     getaddress,
     setaddress,
     execrequest,
-    fetchcancel,
+    newcanceller,
+    cancelrequest,
     fetchrequest,
     ishttpallowed
 }

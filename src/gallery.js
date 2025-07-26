@@ -1,7 +1,7 @@
 import { datauri } from "./datauri.js"
 import { bmp_mono } from "./jsbmp.js"
-import { execrequest, requests, fetchcancel } from "./client.js"
-import { addtooltip, updatetooltip } from "./utils.js"
+import { execrequest, requests } from "./client.js"
+import { Mutex, addtooltip, updatetooltip } from "./utils.js"
 import { eventhandler } from "./event.js"
 import * as serial from "./serial.js"
 import * as command from "./command.js"
@@ -30,6 +30,8 @@ let printsource = PrintSource.FLASH;
 let printtarget = PrintTarget.PC;
 
 const jsPDF = window.jspdf.jsPDF;
+
+const rendermutex = new Mutex();
 
 class PrintItem {
     constructor(source, filename) {
@@ -335,25 +337,25 @@ function renderbmp(name, bitmap) {
     putimage(name, datauri("image/bmp", content));
 }
 
-async function reloadall() {
-    const docelements = document.getElementById('prtdoc').children;
-    const prtelements = [].filter.call(docelements, el => el.id != 'prttemplate');
-    for(const prtelement of prtelements) {
-        prtelement.remove();
-    }
-    await renderall();
-}
+let renderinprogress = 0;
 
-let rendering = false;
-
-async function renderall() {
-    if (rendering) fetchcancel();
+async function renderall(clear = false) {
+    renderinprogress++;
+    const release = await rendermutex.acquire();
     const format = document.querySelector("#format input[type='radio']:checked").value;
     try {
-        rendering = true;
+        if (clear) {
+            const docelements = document.getElementById('prtdoc').children;
+            const prtelements = [].filter.call(docelements, el => el.id != 'prttemplate');
+            for(const prtelement of prtelements) {
+                prtelement.remove();
+            }
+        }
+        if (renderinprogress > 1) return;
         const names = await execrequest(requests.loadprintouts, { store: getstorename() });
         names.sort();
         for(const name of names) {
+            if (renderinprogress > 1) break;
             const bitmap = await getprintout(name);
             switch(format) {
                 case "png":
@@ -369,7 +371,8 @@ async function renderall() {
     } catch(error) {
         console.error('Error:', error);
     } finally {
-        rendering = false;
+        renderinprogress--;
+        release();
         updatetooltip();
     }
 }
@@ -694,7 +697,7 @@ async function galleryflash() {
     flashelement.closest(".gallerysource").getElementsByClassName('gallerymethods')[0].classList.remove("invisible");
 
     printsource = PrintSource.FLASH;
-    await reloadall();
+    await renderall(true);
 }
 
 async function gallerysd() {
@@ -710,7 +713,7 @@ async function gallerysd() {
     sdelement.closest(".gallerysource").getElementsByClassName('gallerymethods')[0].classList.remove("invisible");
 
     printsource = PrintSource.SD;
-    await reloadall();
+    await renderall(true);
 }
 
 function confirmdelete() {
@@ -725,7 +728,7 @@ async function deleteprintout() {
     }
     confirmdeletemodal.hide();
     refreshtools();
-    await reloadall();
+    await renderall(true);
 }
 
 async function joinprintout() {
@@ -734,7 +737,7 @@ async function joinprintout() {
 
     await execrequest(requests.joinprintout, { names: filenames, fromstore: storename, tostore: storename });
 
-    await reloadall();
+    await renderall(true);
 }
 
 function copyprintout(element) {
@@ -754,7 +757,7 @@ async function pasteprintout() {
     for(const printcopy of printcopies) {
         await execrequest(requests.copyprintout, { name: printcopy.filename, fromstore: getstorename(printcopy.source), tostore: getstorename() });
     }
-    await reloadall();
+    await renderall(true);
 }
 
 function sourcegallery() {
@@ -872,7 +875,7 @@ function handlesd(ismounted) {
     if (ismounted) {
         sdsource.classList.remove("d-none");
         if (printsource == PrintSource.SD) {
-            reloadall();
+            renderall(true);
         }
     } else {
         arrayremove(printcopies, c => c.source == PrintSource.SD);
@@ -902,7 +905,7 @@ eventhandler.add(async (event) => {
     switch(event.type) {
         case "capture":
             if (printsource == PrintSource.FLASH) {
-                reloadall();
+                renderall(true);
             }
             break;
         case "sdcard":
