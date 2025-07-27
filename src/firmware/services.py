@@ -20,7 +20,8 @@ def initialise(p, sd):
     connectedpixel = p
     sdmanager = sd
 
-    physicalprinter.setenabled(False)
+    setprinteraddress(getprinteraddress()["address"], False)
+    setprintertarget(getprinter()["target"], False)
 
 @micropython.native # type: ignore
 async def get_printout(store, name):
@@ -126,7 +127,7 @@ def setprinterdensity(value):
     physicalprinter.setdensity(value)
     return {}
 
-def setprintertarget(target):
+def setprintertarget(target, save=True):
     logging.info(f"Changing printer to {target}")
     target = target.lower()
     if target == "off":
@@ -138,11 +139,12 @@ def setprintertarget(target):
         parallelprinter.setactive()
     elif target == "network":
         networkprinter.setactive()
-    settings.setprintertarget(target)
-    settings.save()
+    if save:
+        settings.setprintertarget(target)
+        settings.save()
     protocol = settings.getprinterprotocol()
     if protocol is not None:
-        setprinterprotocol(protocol)
+        setprinterprotocol(protocol, save)
     return {}
 
 def getprinter():
@@ -151,11 +153,12 @@ def getprinter():
         "target": "off" if target is None else target
     }
 
-def setprinteraddress(address):
+def setprinteraddress(address, save=True):
     logging.info(f"Setting printer address to {address}")
     networkprinter.setaddress(address)
-    settings.setprinteraddress(address)
-    settings.save()
+    if save:
+        settings.setprinteraddress(address)
+        settings.save()
     return {}
 
 def getprinteraddress():
@@ -163,7 +166,7 @@ def getprinteraddress():
         "address": networkprinter.getaddress()
     }
 
-def setprinterprotocol(protocol):
+def setprinterprotocol(protocol, save=True):
     logging.info(f"Setting printer protocol to {protocol}")
     protocol = protocol.lower()
     if protocol == "auto":
@@ -179,8 +182,9 @@ def setprinterprotocol(protocol):
         physicalprinter.setprotocolescp()
     elif protocol == "escpr":
         networkprinter.setprotocolescpr()
-    settings.setprinterprotocol(protocol)
-    settings.save()
+    if save:
+        settings.setprinterprotocol(protocol)
+        settings.save()
     return {}
 
 def getprinterprotocol():
