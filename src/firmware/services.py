@@ -13,6 +13,14 @@ from system import hasnetwork
 
 testprinterfilename = const("/testprintout.cap")
 
+PRINTERTARGET       = const("printer:target")
+PRINTERADDRESS      = const("printer:raw:address")
+PRINTERPROTOCOL     = const("printer:raw:protocol")
+
+OLDPRINTERTARGET    = const("printertarget")
+OLDPRINTERADDRESS   = const("printeraddress")
+OLDPRINTERPROTOCOL  = const("printerprotocol")
+
 def initialise(p, sd):
     global connectedpixel
     global sdmanager
@@ -20,8 +28,21 @@ def initialise(p, sd):
     connectedpixel = p
     sdmanager = sd
 
+    migratesettings()
+
     setprinteraddress(getprinteraddress()["address"], False)
     setprintertarget(getprinter()["target"], False)
+
+# move old flat settings into new hierarchical one
+def migratesettings():
+    if settings.getvalue(OLDPRINTERADDRESS) is not None:
+        settings.setvalue(PRINTERTARGET, settings.getvalue(OLDPRINTERTARGET))
+        settings.setvalue(PRINTERADDRESS, settings.getvalue(OLDPRINTERADDRESS))
+        settings.setvalue(PRINTERPROTOCOL, settings.getvalue(OLDPRINTERPROTOCOL))
+        settings.removevalue(OLDPRINTERTARGET)
+        settings.removevalue(OLDPRINTERADDRESS)
+        settings.removevalue(OLDPRINTERPROTOCOL)
+        settings.save()
 
 @micropython.native # type: ignore
 async def get_printout(store, name):
@@ -140,15 +161,15 @@ def setprintertarget(target, save=True):
     elif target == "network":
         networkprinter.setactive()
     if save:
-        settings.setprintertarget(target)
+        settings.setvalue(PRINTERTARGET, target)
         settings.save()
-    protocol = settings.getprinterprotocol()
+    protocol = settings.getvalue(PRINTERPROTOCOL)
     if protocol is not None:
         setprinterprotocol(protocol, save)
     return {}
 
 def getprinter():
-    target = settings.getprintertarget()
+    target = settings.getvalue(PRINTERTARGET)
     return {
         "target": "off" if target is None else target
     }
@@ -157,20 +178,20 @@ def setprinteraddress(address, save=True):
     logging.info(f"Setting printer address to {address}")
     networkprinter.setaddress(address)
     if save:
-        settings.setprinteraddress(address)
+        settings.setvalue(PRINTERADDRESS, address)
         settings.save()
     return {}
 
 def getprinteraddress():
     return {
-        "address": networkprinter.getaddress()
+        "address": settings.getvalue(PRINTERADDRESS)
     }
 
 def setprinterprotocol(protocol, save=True):
     logging.info(f"Setting printer protocol to {protocol}")
     protocol = protocol.lower()
     if protocol == "auto":
-        target = settings.getprintertarget()
+        target = settings.getvalue(PRINTERTARGET)
         if target == "serial":
             serialprinter.setdefaultprotocol()
         elif target == "parallel":
@@ -183,12 +204,12 @@ def setprinterprotocol(protocol, save=True):
     elif protocol == "escpr":
         networkprinter.setprotocolescpr()
     if save:
-        settings.setprinterprotocol(protocol)
+        settings.setvalue(PRINTERPROTOCOL, protocol)
         settings.save()
     return {}
 
 def getprinterprotocol():
-    protocol = settings.getprinterprotocol()
+    protocol = settings.getvalue(PRINTERPROTOCOL)
     return {
         "protocol": "auto" if protocol is None else protocol
     }

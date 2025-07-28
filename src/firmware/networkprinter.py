@@ -4,7 +4,6 @@ import struct
 import math
 from phew import logging
 import physicalprinter
-import settings
 from system import hasnetwork
 from bitmap import packbits_encode, bitmap_to_escpr
 
@@ -166,7 +165,6 @@ class EscprProtocol(physicalprinter.Protocol):
         await self.write(b"\x1b@")                                          # initialize printer
 
 escpprotocol = EscprProtocol()
-setaddress(settings.getprinteraddress())
 
 def setprotocolescpr():
     physicalprinter.setprotocol(escpprotocol)
