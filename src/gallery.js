@@ -126,6 +126,12 @@ function downloadtxt(name, txt) {
     download(getfilename(name, ".txt"), URL.createObjectURL(blob));
 }
 
+function downloadcap(name, bitmap) {
+    const bytes = Uint8Array.from(bitmap);
+    const blob = new Blob([bytes], {type: 'application/octet-stream'});
+    download(getfilename(name, ".cap"), URL.createObjectURL(blob));
+}
+
 function downloadpdf(name, img) {
     const doc = new jsPDF();
     doc.addImage(img.src, x=10, y=10);
@@ -149,7 +155,7 @@ function printElement(element, fontsize = null) {
     document.body.removeChild(prtelement);
 }
 
-function putimage(name, imgsrc) {
+function putimage(name, bitmap, format, imgsrc) {
     const prtid = `prt${name}`;
     const imgid = `img${name}`;
     let img = document.getElementById(imgid);
@@ -194,8 +200,11 @@ function putimage(name, imgsrc) {
         const downbtn = prt.getElementsByClassName("prtdownbtn")[0];
         downbtn.addEventListener("click", () => {
             if (txtflip.dataset.flipped == "false") {
-                downloadimg(name, img);
-                //downloadpdf(name, img);
+                if (format === "cap") {
+                    downloadcap(name, bitmap);
+                } else {
+                    downloadimg(name, img);
+                }
             } else {
                 downloadtxt(name, txt);
             }
@@ -258,7 +267,7 @@ function putimage(name, imgsrc) {
     }
 }
 
-function rendercanvas(name, bitmap, mimetype) {
+function rendercanvas(name, bitmap, format, mimetype) {
     const scale = parseInt(document.getElementById("scale").value);
 
     const rowlength = 256;
@@ -305,10 +314,10 @@ function rendercanvas(name, bitmap, mimetype) {
     }
 
     context.putImageData(imageData, 0, 0);
-    putimage(name, canvas.toDataURL(mimetype))
+    putimage(name, bitmap, format, canvas.toDataURL(mimetype))
 }
 
-function renderbmp(name, bitmap) {
+function renderbmp(name, bitmap, format) {
     const scale = parseInt(document.getElementById("scale").value);
 
     const rowlength = 256;
@@ -345,7 +354,7 @@ function renderbmp(name, bitmap) {
     const paper = document.querySelector("#paper input[type='radio']:checked").value;
     const papercolor = paper == "ts2040" ? "FFFFFF" : "C0C0C0";
     const content = bmp_mono(width, height, pixels, [papercolor, '000000']);
-    putimage(name, datauri("image/bmp", content));
+    putimage(name, bitmap, format, datauri("image/bmp", content));
 }
 
 let renderinprogress = 0;
@@ -370,13 +379,14 @@ async function renderall(clear = false) {
             const bitmap = await getprintout(name);
             switch(format) {
                 case "png":
-                    rendercanvas(name, bitmap, "image/png");
+                case "cap":
+                    rendercanvas(name, bitmap, format, "image/png");
                     break;
                 case "jpeg":
-                    rendercanvas(name, bitmap, "image/jpeg");
+                    rendercanvas(name, bitmap, format, "image/jpeg");
                     break;
                 default:
-                    renderbmp(name, bitmap);
+                    renderbmp(name, bitmap, format);
             }
         }
     } catch(error) {
