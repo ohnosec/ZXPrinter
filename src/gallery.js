@@ -164,6 +164,7 @@ function putimage(name, imgsrc) {
 
         const txtflip = prt.getElementsByClassName("flip-card-inner")[0];
         txtflip.dataset.flipped = false;
+        txtflip.dataset.view = "image";
         const btntxtimg = prt.getElementsByClassName("prttxtimgbtn")[0];
         const btnchk = btntxtimg.getElementsByClassName("btn-check");
         const btnbtn = btntxtimg.getElementsByClassName("btn");
@@ -172,7 +173,17 @@ function putimage(name, imgsrc) {
             btn.id = btn.id+imgid;
             btn.name = btn.name+imgid;
             btn.addEventListener("click", (event) => {
-                txtflip.dataset.flipped = event.currentTarget.value == "text";
+                const view = event.currentTarget.value;
+                if (view !== txtflip.dataset.view) {
+                    txtflip.dataset.view = view;
+                    const istext = view === "text";
+                    const islisting = view === "listing";
+                    txtflip.dataset.flipped = istext || islisting;
+                    if (istext || islisting) {
+                        const txt = prt.getElementsByClassName("prttxt")[0];
+                        converttext(name, islisting, txt);
+                    }
+                }
             });
         }
         for(let i=0; i<btnbtn.length; i++) {
@@ -227,7 +238,7 @@ function putimage(name, imgsrc) {
     }
     const prt = document.getElementById(prtid);
     const txt = prt.getElementsByClassName("prttxt")[0];
-    converttext(name, txt);
+    converttext(name, false, txt);
 
     const paper = document.querySelector("#paper input[type='radio']:checked").value;
     const paperelement = img.parentElement;
@@ -377,7 +388,7 @@ async function renderall(clear = false) {
     }
 }
 
-async function converttext(name, element) {
+async function converttext(name, islisting, element) {
     const convertto = document.querySelector("#convert input[type='radio']:checked").value;
     const fonttype = document.querySelector("#fonttype input[type='radio']:checked").value;
     const iszmakebas = convertto == "zmakebas";
@@ -516,6 +527,14 @@ async function converttext(name, element) {
         }
         return unknown;
     }
+
+    const htmlencode = (text) => {
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
     const linebuilder = () => {
         let linetext = "";
         let inversed = false;
@@ -528,14 +547,14 @@ async function converttext(name, element) {
         return {
             addnormal: (ch) => {
                 endinverse();
-                linetext += ch;
+                linetext += htmlencode(ch);
             },
             addinverse: (ch) => {
                 if (!inversed) {
                     linetext += '<span class="prttxtinverse">';
                     inversed = true;
                 }
-                linetext += ch;
+                linetext += htmlencode(ch);
             },
             gettext: () => {
                 endinverse();
@@ -563,39 +582,31 @@ async function converttext(name, element) {
         }
         text.push(builder.gettext());
     }
-    // unwrap lines if it's code
-    if (text.length>0) {
-        const linenumbers = text.reduce((total, linetext) => {
-            const linematch = linetext.match(/^ *\d+ /);
-            return total += (linematch && linematch[0].length == 5) ? 1 : 0;
-            },
-            0);
-        if (linenumbers>0 && linenumbers > lines/2) {
-            const listing = [];
-            let listingline = "";
-            for(let lineindex=0; lineindex<text.length; lineindex++) {
-                const builder = text[lineindex].trimEnd();
-                const linematch = text[lineindex].match(/^ *\d+ /);
-                const isline = linematch && linematch[0].length == 5;
-                if (isline) {
-                    if (listingline != "") {
-                        listing.push(listingline);
-                    }
-                    listingline = builder;
-                } else
-                    listingline += builder;
-            }
-            if (listingline != "") {
-                listing.push(listingline);
-            }
-            text = listing;
+    // unwrap lines if it's a listing
+    if (text.length>0 && islisting) {
+        const listing = [];
+        let line = "";
+        for(const textline of text) {
+            const partialline = textline.trimEnd();
+            // 0-3 spaces followed by 1-4 digits followed by a space
+            const matchnewline = textline.match(/^ {0,3}\d{1,4} /);
+            const isnewline = matchnewline && matchnewline[0].length == 5;
+            if (isnewline) {
+                if (line != "") {
+                    listing.push(line);
+                }
+                line = partialline;
+            } else
+                line += partialline;
         }
+        if (line != "") {
+            listing.push(line);
+        }
+        text = listing;
     }
     let html = "";
     for(let i=0; i<text.length; i++) {
         html += text[i] + "\n";
-        // html += text[i] + "<br>";
-        //console.log(text[i]);
     }
     element.innerHTML = "";
     setTimeout(() => {

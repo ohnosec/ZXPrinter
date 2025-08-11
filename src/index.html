@@ -473,12 +473,12 @@
                   </div>
                 </div>
                 <div id="printernetwork" class="collapse">
-                  <div class="mb-3 pe-5">
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="printercustom" onclick="void app.setprintercustom(this)">
-                      <label class="form-check-label" for="printercustom">Custom configuration</label>
+                    <div class="mb-3 pe-5">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="printercustom" onclick="void app.setprintercustom(this)">
+                        <label class="form-check-label" for="printercustom">Custom configuration</label>
+                      </div>
                     </div>
-                  </div>
                   <div class="mb-3 pe-5">
                     <div class="mb-3 mt-2 d-none" id="printerlanguageoption">
                       <label for="printerlanguage" class="form-label">Printer Language</label>
@@ -646,11 +646,13 @@
                   </div>
                 </div>
                 <div class="col-11 text-end">
-                  <div class="prttxtimgbtn btn-group me-1" role="group" data-bs-toggle="tooltip" data-bs-title="Image/Text">
+                  <div class="prttxtimgbtn btn-group me-1" role="group">
                     <input type="radio" class="btn-check" name="prttxtimgbtn" id="prtimgbtn" autocomplete="off" value="image" checked>
-                    <label class="btn btn-outline-secondary btn-sm" for="prtimgbtn"><i class="bi bi-file-image"></i></label>
+                    <label class="btn btn-outline-secondary btn-sm" for="prtimgbtn"><i class="bi bi-file-image" data-bs-toggle="tooltip" data-bs-title="Image"></i></label>
                     <input type="radio" class="btn-check" name="prttxtimgbtn" id="prttxtbtn" autocomplete="off" value="text">
-                    <label class="btn btn-outline-secondary btn-sm" for="prttxtbtn"><i class="bi bi-file-text"></i></label>
+                    <label class="btn btn-outline-secondary btn-sm" for="prttxtbtn"><i class="bi bi-text-left" data-bs-toggle="tooltip" data-bs-title="Text"></i></label>
+                    <input type="radio" class="btn-check" name="prttxtimgbtn" id="prtlistbtn" autocomplete="off" value="listing">
+                    <label class="btn btn-outline-secondary btn-sm" for="prtlistbtn"><i class="bi bi-list-ol" data-bs-toggle="tooltip" data-bs-title="Listing"></i></label>
                   </div>
                   <button class="prtdownbtn btn btn-secondary btn-sm me-1" data-bs-toggle="tooltip" data-bs-title="Download">
                     <i class="bi bi-box-arrow-down"></i>
