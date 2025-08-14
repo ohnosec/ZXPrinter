@@ -593,24 +593,26 @@ async function converttext(name, islisting, element) {
         text.push(builder.gettext());
     }
     // unwrap lines if it's a listing
-    if (text.length>0 && islisting) {
+    if (islisting && text.length>0) {
         const listing = [];
-        let line = "";
+        let codeline = "";
+        let lastlinenumber = -1;
         for(const textline of text) {
-            const partialline = textline.trimEnd();
             // 0-3 spaces followed by 1-4 digits followed by a space
-            const matchnewline = textline.match(/^ {0,3}\d{1,4} /);
-            const isnewline = matchnewline && matchnewline[0].length == 5;
-            if (isnewline) {
-                if (line != "") {
-                    listing.push(line);
+            const matchlinenumber = textline.match(/^ {0,3}\d{1,4} /);
+            const haslinenumber = matchlinenumber && matchlinenumber[0].length == 5;
+            const linenumber = haslinenumber ? parseInt(matchlinenumber, 10) : undefined;
+            if (haslinenumber && linenumber > lastlinenumber) {
+                lastlinenumber = linenumber;
+                if (codeline != "") {
+                    listing.push(codeline.trimEnd());
                 }
-                line = partialline;
+                codeline = textline;
             } else
-                line += partialline;
+                codeline += textline;
         }
-        if (line != "") {
-            listing.push(line);
+        if (codeline != "") {
+            listing.push(codeline.trimEnd());
         }
         text = listing;
     }
