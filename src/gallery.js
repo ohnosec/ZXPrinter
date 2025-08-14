@@ -155,6 +155,18 @@ function printElement(element, fontsize = null) {
     document.body.removeChild(prtelement);
 }
 
+function puttext(name, prt) {
+    const txtflip = prt.getElementsByClassName("flip-card-inner")[0];
+    const view = txtflip.dataset.view;
+    const istext = view === "text";
+    const islisting = view === "listing";
+    if (istext || islisting) {
+        const txt = prt.getElementsByClassName("prttxt")[0];
+        converttext(name, islisting, txt);
+    }
+    txtflip.dataset.flipped = istext || islisting;
+}
+
 function putimage(name, bitmap, format, imgsrc) {
     const prtid = `prt${name}`;
     const imgid = `img${name}`;
@@ -182,13 +194,7 @@ function putimage(name, bitmap, format, imgsrc) {
                 const view = event.currentTarget.value;
                 if (view !== txtflip.dataset.view) {
                     txtflip.dataset.view = view;
-                    const istext = view === "text";
-                    const islisting = view === "listing";
-                    txtflip.dataset.flipped = istext || islisting;
-                    if (istext || islisting) {
-                        const txt = prt.getElementsByClassName("prttxt")[0];
-                        converttext(name, islisting, txt);
-                    }
+                    puttext(name, prt);
                 }
             });
         }
@@ -245,9 +251,9 @@ function putimage(name, bitmap, format, imgsrc) {
 
         addtooltip([prt]);
     }
+
     const prt = document.getElementById(prtid);
-    const txt = prt.getElementsByClassName("prttxt")[0];
-    converttext(name, false, txt);
+    puttext(name, prt);
 
     const paper = document.querySelector("#paper input[type='radio']:checked").value;
     const paperelement = img.parentElement;
