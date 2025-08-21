@@ -210,10 +210,37 @@ function replaceparams(pattern, params) {
     return value;
 }
 
-async function fetchrequest(basepath, request, params = {}, options = { timeout: 5000, canceller: undefined}) {
-    if (!ishttpallowed()) {
-        throw new ShowError("Secure web hosting (https) doesn't support using the web to access ZX Printer");
+function createtimeout(callback, delay) {
+  let timeoutid;
+
+  function cancel() {
+    clearTimeout(timeoutid);
+  }
+
+  function restart() {
+    cancel();
+    timeoutid = setTimeout(callback, delay);
+  };
+
+  return {
+    restart: restart,
+    cancel: cancel
+  }
+}
+
+function createtimeoutabort(delay) {
+    const aborter = new AbortController();
+    const timeout = createtimeout(() => {
+        aborter.abort("TimeoutError");
+    }, delay);
+    return {
+        trigger: timeout.restart,
+        cancel: timeout.cancel,
+        signal: aborter.signal
     }
+}
+
+function buildrequest(request, params) {
     let body = request.body && typeof request.body !== "function" ? structuredClone(request.body) : {};
     let path = request.route;
     let querystrings = [];
@@ -244,25 +271,48 @@ async function fetchrequest(basepath, request, params = {}, options = { timeout:
             }
         }
     }
-    const abortsignallers = [ AbortSignal.timeout(options.timeout) ];
-    if (options.canceller) abortsignallers.push(options.canceller.signal);
-    const requestinit = {
-      method: request.method,
-      headers: { "Accept": "application/json" },
-      signal: AbortSignal.any(abortsignallers)
-    };
-    if (request.method == "POST" || request.method == "PUT") {
-      requestinit["body"] = JSON.stringify(body);
-      requestinit.headers["Content-Type"] = "application/json"
+    return {
+        path: path,
+        body: body
     }
-    const startTime = (new Date()).getTime();
-    const response = await fetch(`${basepath}/${path}`, requestinit);
-    const responseMs = (new Date()).getTime() - startTime;
-    console.log(`Request to '${path}' took ${responseMs} ms`);
-    return response;
 }
 
-async function execrequest(request, params = {}, options = { showerrortoast: true, timeout: 5000, cancel: undefined}) {
+async function fetchrequest(basepath, request, params = {}, options = { timeout: 2000, canceller: undefined}) {
+    if (!ishttpallowed()) {
+        throw new ShowError("Secure web hosting (https) doesn't support using the web to access ZX Printer");
+    }
+    const { path, body } = buildrequest(request, params);
+    const timeoutabort = createtimeoutabort(options.timeout);
+    const abortsignals = [ timeoutabort.signal ];
+    if (options.canceller) abortsignals.push(options.canceller.signal);
+    const requestoptions = {
+      method: request.method,
+      headers: { "Accept": "application/json" },
+      signal: AbortSignal.any(abortsignals)
+    };
+    if (request.method == "POST" || request.method == "PUT") {
+      requestoptions["body"] = JSON.stringify(body);
+      requestoptions.headers["Content-Type"] = "application/json"
+    }
+    timeoutabort.trigger();
+    const starttime = (new Date()).getTime();
+    const response = await fetch(`${basepath}/${path}`, requestoptions);
+    let responsebody = "";
+    const decoder = new TextDecoder();
+    for await (const chunk of response.body) {
+        timeoutabort.trigger();
+        responsebody += decoder.decode(chunk);
+    }
+    const responsetime = (new Date()).getTime() - starttime;
+    timeoutabort.cancel();
+    console.log(`Request to '${path}' took ${responsetime} ms`);
+    return {
+        "ok": response.ok,
+        "json": () => JSON.parse(responsebody)
+    }
+}
+
+async function execrequest(request, params = {}, options = { showerrortoast: true, timeout: 2000, cancel: undefined}) {
   try {
     if (options.timeout > 500) setbusystate(true);
     if (iscloudconnection()) {
