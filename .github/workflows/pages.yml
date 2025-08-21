@@ -49,16 +49,7 @@ jobs:
 
       - name: Build
         run: |
-          python deploy.py
-          python build.py
-
-      - name: Get current date
-        id: date
-        run: echo "today=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
-
-      - name: Update build date
-        run: |
-          sed -i "s|{{builddate}}|${{ steps.date.outputs.today }}|g" './src/index.html'
+          python build.py -im
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

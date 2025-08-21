@@ -7,5 +7,6 @@ dist
 
 repo
 
+/src/build.json
 /src/files.json
 /src/font.min.js

@@ -7,8 +7,13 @@ export * from "./printer.js"
 
 import { isdropdown, hidedropdowns, addtooltip, updatetooltip, menuactiveevent } from "./utils.js"
 import * as settings from "./settings.js"
+import env from "./env.json" with { type: "json" }
+import build from "./build.json" with { type: "json" }
 
 const TOOLTIPSTATENAME = "showtooltip";
+
+document.getElementById("version").textContent = env.version;
+document.getElementById("build").textContent = build.number;
 
 // fix "Blocked aria-hidden on an element...""
 document.addEventListener("hide.bs.modal", (event) => {

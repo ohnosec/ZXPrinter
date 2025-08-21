@@ -2,39 +2,24 @@ import sys, os
 import json
 import re
 import fnmatch
+import argparse
+from datetime import datetime
 
 scriptpath = os.path.abspath(os.path.dirname(sys.argv[0])) # type: ignore
 basepath = f"{scriptpath}/src"
 
+buildfile = "build.json"
+envfile = "env.json"
 distrofile = "files.json"
+indexfile = "index.html"
 definition = {
-    "include": ["<>main.py", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py", "<firmware/>*.cap"],
-    "exclude": [distrofile, "font.js", "firmware/test*.py"]
+    "include": ["<>main.py", "env.json", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py", "<firmware/>*.cap"],
+    "exclude": [buildfile, distrofile, "font.js", "firmware/test*.py"]
 }
 
-def minifyfont(fontfilename):
-    print("Minify font")
-
-    linelength = 128
-
-    filepath = os.path.normpath(os.path.join(basepath, fontfilename)) # type: ignore
-    (filefolder, filename) = os.path.split(filepath) # type: ignore
-    (filenoext, fileext) = os.path.splitext(filename) # type: ignore
-    fileminpath = os.path.normpath(os.path.join(filefolder, f"{filenoext}.min{fileext}")) # type: ignore
-
-    with open(filepath, "r") as fontfile:
-        fontjs = fontfile.read()
-        names = re.split(r"\W+", fontjs)
-        shortname = names[1]
-        fontpy = re.sub(r"^.*\[", r"[", fontjs).replace("//","#").replace("\n", "\\\n")
-        fonts = eval(fontpy)
-        flatfonts = [row for font in fonts for row in font]
-        hexfonts = "".join(f"{i:02x}" for i in flatfonts)
-        hexlines = [hexfonts[i:i+linelength] for i in range(0, len(hexfonts), linelength)]
-        hexstrings = '[\n    "' + '",\n    "'.join(hexlines) + '"\n]'
-        with open(fileminpath, "w") as minfile:
-            minfile.write(f"const {shortname}=")
-            minfile.write(hexstrings)
+buildtime = datetime.utcnow()
+buildnumber = buildtime.strftime("%Y-%m-%d %H:%M:%S")
+indexpath = f"{basepath}/{indexfile}"
 
 # crc functions converted from here... (also used in firmware sd card)
 # https://electronics.stackexchange.com/questions/321304/how-to-use-the-data-crc-of-sd-cards-in-spi-mode
@@ -122,8 +107,8 @@ def getdistro(source, target, type, checksum):
         "checksum": f"0x{checksum:04x}"
     }
 
-def builddistro():
-    print(f"Build distro file '{distrofile}'")
+def updatedistro():
+    print(f"Update distro file '{distrofile}'")
 
     distros = []
     for file in getfiles():
@@ -143,5 +128,89 @@ def builddistro():
     with open(f"{basepath}/{distrofile}", "w") as distrostream:
         json.dump(distros, distrostream, indent=2) # type: ignore
 
+def minifyfont(fontfilename):
+    print(f"Minify font '{fontfilename}'")
+
+    linelength = 128
+
+    filepath = os.path.normpath(os.path.join(basepath, fontfilename)) # type: ignore
+    (filefolder, filename) = os.path.split(filepath) # type: ignore
+    (filenoext, fileext) = os.path.splitext(filename) # type: ignore
+    fileminpath = os.path.normpath(os.path.join(filefolder, f"{filenoext}.min{fileext}")) # type: ignore
+
+    with open(filepath, "r") as fontfile:
+        fontjs = fontfile.read()
+        names = re.split(r"\W+", fontjs)
+        shortname = names[1]
+        fontpy = re.sub(r"^.*\[", r"[", fontjs).replace("//","#").replace("\n", "\\\n")
+        fonts = eval(fontpy)
+        flatfonts = [row for font in fonts for row in font]
+        hexfonts = "".join(f"{i:02x}" for i in flatfonts)
+        hexlines = [hexfonts[i:i+linelength] for i in range(0, len(hexfonts), linelength)]
+        hexstrings = '[\n    "' + '",\n    "'.join(hexlines) + '"\n]'
+        with open(fileminpath, "w") as minfile:
+            minfile.write(f"const {shortname}=")
+            minfile.write(hexstrings)
+
+def updateimportmap():
+    print("Update index.html importmap")
+
+    timestamp = buildtime.strftime("%Y%m%d%H%M%S")
+
+    files = [file for file in os.listdir(f"{basepath}") if file.endswith(".js")]
+
+    template = r'''
+    <script type="importmap">
+    {{
+      "imports": {{
+        {imports}
+      }}
+    }}
+    </script>'''
+
+    imports = ",\n        ".join([f'"./{file}": "./{file}?v={timestamp}"' for file in files])
+
+    importmap = template.format(imports=imports.lstrip()).lstrip()
+
+    with open(indexpath, "r", encoding="utf-8") as file:
+        indexhtml = file.read()
+
+    indexhtml = re.sub(r'<script type="importmap">[\s\S]*?</script>', importmap, indexhtml, flags=re.MULTILINE)
+
+    with open(indexpath, "w", encoding="utf-8") as file:
+        file.write(indexhtml)
+
+def updateversion():
+    print("Update index.html version and build number")
+
+    with open(indexpath, "r", encoding="utf-8") as file:
+        indexhtml = file.read()
+
+    with open(f"{basepath}/{envfile}", "r") as envstream:
+        env = json.load(envstream)
+
+    indexhtml = indexhtml.replace("{{version}}", env["version"])
+    indexhtml = indexhtml.replace("{{build}}", buildnumber)
+
+    with open(indexpath, "w", encoding="utf-8") as file:
+        file.write(indexhtml)
+
+def updatebuildinfo():
+    print(f"Update build file '{buildfile}'")
+
+    build = {
+        "number": buildnumber
+    }
+    with open(f"{basepath}/{buildfile}", "w") as buildstream:
+        json.dump(build, buildstream, indent=2) # type: ignore
+
+parser = argparse.ArgumentParser("build", description="Pico ZX Printer builder")
+parser.add_argument("-im", action="store_true", help="add versioned importmap to index.html")
+args = parser.parse_args()
+
+updatebuildinfo()
+updateversion()
+if args.im:
+    updateimportmap()
 minifyfont("font.js")
-builddistro()
+updatedistro()
