@@ -44,16 +44,16 @@ def initialize(p):
             filetype = file["type"]
             if filetype == "web" or filetype == "config":
                 filename = file["target"]
-                if filename != "local.js":
+                if filename != services.ENVFILENAME:
                     addstaticroute(filename)
 
     network.hostname(settings.gethostname())
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
-@server.route("/local.js")
+@server.route(f"/{services.ENVFILENAME}")
 async def local(_):
-    return JsonResponse(render_template("/local.js", local="true"), content="text/javascript")
+    return JsonResponse(render_template(f"/{services.ENVFILENAME}", local="true"))
 
 def storename(store):
     return store if store == fileprinter.SDSTORENAME else None

@@ -1,4 +1,4 @@
-import { islocal } from "./local.js"
+import env from "./env.json" with { type: "json" }
 import * as serial from "./serial.js"
 import * as command from "./command.js"
 import * as settings from "./settings.js"
@@ -152,7 +152,7 @@ const requests = {
 }
 
 function isrunninglocal() {
-    return islocal == "true";
+    return env.islocal == "true";
 }
 
 function hasaddress() {

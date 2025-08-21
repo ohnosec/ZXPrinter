@@ -21,6 +21,8 @@ OLDPRINTERTARGET    = const("printertarget")
 OLDPRINTERADDRESS   = const("printeraddress")
 OLDPRINTERPROTOCOL  = const("printerprotocol")
 
+ENVFILENAME         = const("env.json")
+
 def initialise(p, sd):
     global connectedpixel
     global sdmanager
@@ -183,9 +185,9 @@ def setprinteraddress(address, save=True):
     return {}
 
 def getprinteraddress():
-    return {
+        return {
         "address": settings.getvalue(PRINTERADDRESS)
-    }
+        }
 
 def setprinterprotocol(protocol, save=True):
     logging.info(f"Setting printer protocol to {protocol}")
@@ -365,8 +367,10 @@ def getcardinfo():
     }
 
 def about():
+    with open(f"/{ENVFILENAME}") as fp:
+        env = json.load(fp)
     return {
-        "version": 1.0,
+        "version": env["version"],
         "network": hasnetwork(),
         "sdcard": sdmanager.ismounted()
     }

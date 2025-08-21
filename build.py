@@ -13,8 +13,8 @@ envfile = "env.json"
 distrofile = "files.json"
 indexfile = "index.html"
 definition = {
-    "include": ["<>main.py", "env.json", "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py", "<firmware/>*.cap"],
-    "exclude": [buildfile, distrofile, "font.js", "firmware/test*.py"]
+    "include": ["<>main.py", buildfile, envfile, "*.html", "*.css", "*.js", "*.svg", "*.ico", "*.woff", "<firmware/>*.py", "<firmware/>*.cap"],
+    "exclude": [distrofile, "font.js", "firmware/test*.py"]
 }
 
 buildtime = datetime.utcnow()
@@ -205,12 +205,12 @@ def updatebuildinfo():
         json.dump(build, buildstream, indent=2) # type: ignore
 
 parser = argparse.ArgumentParser("build", description="Pico ZX Printer builder")
-parser.add_argument("-im", action="store_true", help="add versioned importmap to index.html")
+parser.add_argument("-im", action="store_true", help="update index.html")
 args = parser.parse_args()
 
 updatebuildinfo()
-updateversion()
 if args.im:
+    updateversion()
     updateimportmap()
 minifyfont("font.js")
 updatedistro()
