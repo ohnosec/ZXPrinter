@@ -4,27 +4,35 @@ from command import serialnotify
 
 eventclients = set()
 
+pingmessage = "__ping__"
+pongmessage = "__pong__"
+
 connecthandlers = []
 
 def addconnecthandler(handler, data):
     connecthandlers.append((handler, data))
 
+async def sendall(message):
+    global eventclients
+
+    for client in eventclients:
+        try:
+            await client.send(message)
+        except:
+            pass
+
 async def notifyevent(type, data):
     global eventclients
 
     logging.info(f"Notifying event {type} with {data}")
-    payload = json.dumps({
+    event = json.dumps({
         "event": {
             "type": type,
             "data": data
         }
     })
-    await serialnotify(payload)
-    for client in eventclients:
-        try:
-            await client.send(payload)
-        except:
-            pass
+    await serialnotify(event)
+    await sendall(event)
 
 @server.websocket("/events")
 async def events(websocket):
@@ -37,6 +45,8 @@ async def events(websocket):
         evt = await websocket.recv()
         if evt is None or evt["type"] == "close":
             break
-        # if evt["type"] == "text":
-        #     print(f"websocket text: {evt['data']}")
+        if evt["type"] == "text":
+            message = str(evt["data"])
+            if message == pingmessage:
+                await websocket.send(pongmessage)
     eventclients.discard(websocket)
